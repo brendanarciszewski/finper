@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
       appBar: new AppBar(
         title: const Text('Name Gen'),
         actions: <Widget>[
-          IconButton(
+          new IconButton(
             icon: const Icon(Icons.list),
             onPressed: (){},
           ),
