@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
         actions: <Widget>[
           new IconButton(
             icon: const Icon(Icons.list),
-            onPressed: (){},
+            onPressed: () {},
           ),
         ],
       ),
