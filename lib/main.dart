@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: const Text('Name Gen'),
+        title: const Text('Fin(ancial) Per(sistence)'),
         actions: <Widget>[
           new IconButton(
             icon: const Icon(Icons.list),

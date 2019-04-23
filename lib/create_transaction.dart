@@ -3,7 +3,7 @@ import 'data.dart';
 
 class CreateTransactionForm extends StatefulWidget {
   @override
-  _CreateTransactionFormState createState() =>
+  State<StatefulWidget> createState() =>
       new _CreateTransactionFormState();
 }
 
@@ -17,8 +17,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
   void initState() {
     _storedCategoriesFuture = Category.categories;
     _storedCategoriesFuture.then((List<Category> cs) {
-      _category = cs[0];
-      _subcategory = cs[0].subcategories[0];
+      /*this._category = cs[0];
+      this._subcategory = cs[0].subcategories[0];*/
     });
     super.initState();
   }
@@ -26,7 +26,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
   @override
   Widget build(BuildContext context) {
     return new FutureBuilder<List<Category>>(
-      future: _storedCategoriesFuture,
+      future: this._storedCategoriesFuture,
       builder: (BuildContext context, AsyncSnapshot<List<Category>> snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.none:
@@ -41,30 +41,37 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             final categories = snapshot.data;
 
             return new Form(
-              key: _formKey,
+              key: this._formKey,
               child: new Column(
                 children: <Widget>[
                   new TextFormField(
                     validator: (value) {
-                      if (value.isEmpty) return 'Enter store!';
+                      if (value.isEmpty) return 'Enter cost!';
                     },
+                    keyboardType: TextInputType.numberWithOptions(signed: true, decimal: true),
+                    decoration: new InputDecoration(
+                      icon: new Icon(Icons.attach_money),
+                      hintText: 'Enter the Total',
+                    ),
                   ),
                   new DropdownButton<Category>(
                     items: listToDropdownList(categories),
-                    value: _category,
+                    value: this._category,
+                    hint: const Text('Choose a Category'),
                     onChanged: (Category category) {
                       setState(() {
-                        _category = category;
-                        _subcategory = category.subcategories[0];
+                        this._category = category;
+                        this._subcategory = null;
                       });
                     },
                   ),
                   new DropdownButton<Category>(
-                    items: listToDropdownList(_category.subcategories),
-                    value: _subcategory,
+                    items: listToDropdownList(this._category != null ? this._category.subcategories : []),
+                    value: this._subcategory,
+                    hint: const Text('Choose a Subcategory'),
                     onChanged: (Category subcategory) {
                       setState(() {
-                        _subcategory = subcategory;
+                        this._subcategory = subcategory;
                       });
                     },
                   ),
