@@ -12,10 +12,11 @@ class CreateTransactionForm extends StatefulWidget {
 class _CreateTransactionFormState extends State<CreateTransactionForm> {
   final _formKey = new GlobalKey<FormState>();
   var _category = categories[0];
-  Category _subcategory;
+  var _subcategory = categories[0].subcategories[0];
 
   @override
   Widget build(BuildContext context) {
+    var a = Category.categories;
     return new Form(
       key: _formKey,
       child: new Column(
@@ -31,9 +32,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             onChanged: (Category category) {
               setState(() {
                 _category = category;
-                _subcategory = _category != categories[0]
-                    ? category.subcategories[0]
-                    : null;
+                _subcategory = category.subcategories[0];
               });
             },
           ),

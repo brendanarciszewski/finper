@@ -25,22 +25,27 @@ class _DBProvider {
 
   Future<Database> _getDB() async {
     var documentsDir = await pp.getApplicationDocumentsDirectory();
+    print(documentsDir);
     var path = p.join(documentsDir.path, "finper.db");
     return await openDatabase(path, version: 1,
-      onConfigure: (Database db) async {},
+      //onConfigure: (Database db) async {},
       onCreate: (Database db, int version) async {
         for (var table in tables) {
-          await db.execute("CREATE TABLE ${table.tableName} ("
+          final query = "CREATE TABLE ${table.tableName} ("
               "${table.paramsAsStr()}"
-              ")");
+              ")";
+          print(query);
+          await db.execute(query);
         }
+
         for (var category in Category.defaultCategories) {
-          await categoriesV1.newRowWith(category.toJson());
+          await categoriesV1.newRowWith(db, category.toJson());
         }
       },
-      onUpgrade: (Database db, int oldVersion, int newVersion) async {},
-      onDowngrade: (Database db, int oldVersion, int newVersion) async {},
-      onOpen: (Database db) async {});
+      //onUpgrade: (Database db, int oldVersion, int newVersion) async {},
+      //onDowngrade: (Database db, int oldVersion, int newVersion) async {},
+      //onOpen: (Database db) async {}
+    );
   }
 }
 
@@ -52,8 +57,7 @@ mixin _Table {
     return params.map((Param p) => p.asStr()).join(',');
   }
 
-  Future<int> newRowWith(Map<String, dynamic> serializedObj) async {
-    final db = await dbProvider.database;
+  Future<int> newRowWith(Database db, Map<String, dynamic> serializedObj) async {
     return await db.insert(tableName, serializedObj);
   }
 }
@@ -71,7 +75,7 @@ class _AccountsTable with _Table {
 class _CategoriesTable with _Table {
   _CategoriesTable.v1() : tableName = 'Categories_v1',
         params = [
-          Param('category', SQLTypes.TEXT),
+          Param('category', SQLTypes.TEXT, isPrimary: true),
           Param('subcategories', SQLTypes.TEXT)
         ];
   final tableName;
