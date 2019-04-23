@@ -29,7 +29,7 @@ class _DBProvider {
     // TODO remove print
     f.debugPrint(documentsDir.path);
     var path = p.join(documentsDir.path, "finper.db");
-    return await openDatabase(path, version: 1,
+    return openDatabase(path, version: 1,
       //onConfigure: (Database db) async {},
       onCreate: (Database db, int version) async {
         for (var table in tables) {
@@ -60,8 +60,8 @@ mixin _Table {
     return params.map((Param p) => p.asStr()).join(',');
   }
 
-  Future<int> newRowWith(Database db, Map<String, dynamic> serializedObj) async {
-    return await db.insert(tableName, serializedObj);
+  Future<int> newRowWith(Database db, Map<String, dynamic> serializedObj) {
+    return db.insert(tableName, serializedObj);
   }
 }
 
@@ -69,7 +69,7 @@ class _AccountsTable with _Table {
   _AccountsTable.v1() : tableName = 'Accounts_v1',
         params = [
           Param('name', SQLTypes.TEXT, isPrimary: true),
-          Param('amount', SQLTypes.INTEGER)
+          Param('amount', SQLTypes.INTEGER),
         ];
   final tableName;
   final params;
@@ -90,9 +90,11 @@ class _TransactionsTable with _Table {
         params = [
           Param('id', SQLTypes.INTEGER, isPrimary: true),
           Param('amount', SQLTypes.INTEGER),
+          Param('account', SQLTypes.TEXT),
+          Param('vendor', SQLTypes.TEXT),
           Param('category', SQLTypes.TEXT),
           Param('subcategory', SQLTypes.TEXT),
-          Param('account', SQLTypes.TEXT),
+          Param('receipt', SQLTypes.BLOB, isNullable: true),
           Param('transferId', SQLTypes.INTEGER, isNullable: true)
         ];
   final tableName;
