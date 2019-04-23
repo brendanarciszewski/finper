@@ -24,22 +24,6 @@ class Category {
     );
   }
 
-  static Future<List<Category>> get categories async {
-    var res = await (await dbProvider.database).query(categoriesV1.tableName);
-    var list = res.isNotEmpty
-        ? res.map((Map<String, dynamic> map) => Category.fromJson(map)).toList()
-        : [];
-    return list;
-  }
-
-  /*
-  static List<Category> get currentStored {
-    List<Category> _categories;
-    categories.then((lc) {_categories = lc;});
-    while (_categories == null) {}
-    return _categories;
-  }*/
-
   Map<String, String> toJson() =>
       {
         categoriesV1.params[0].name : name,
@@ -47,6 +31,14 @@ class Category {
             subcategories.map((Category c) => c.name).toList()
         )
       };
+
+  static Future<List<Category>> get categories async {
+    var res = await (await dbProvider.database).query(categoriesV1.tableName);
+    var list = res.isNotEmpty
+        ? res.map((Map<String, dynamic> map) => Category.fromJson(map)).toList()
+        : [];
+    return list;
+  }
 
   static final defaultCategories = [
     new Category.all('Employment/Education', [

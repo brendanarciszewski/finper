@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart' as f;
 import 'data.dart';
 
 final dbProvider = new _DBProvider();
@@ -25,7 +26,8 @@ class _DBProvider {
 
   Future<Database> _getDB() async {
     var documentsDir = await pp.getApplicationDocumentsDirectory();
-    print(documentsDir);
+    // TODO remove print
+    f.debugPrint(documentsDir.path);
     var path = p.join(documentsDir.path, "finper.db");
     return await openDatabase(path, version: 1,
       //onConfigure: (Database db) async {},
@@ -34,7 +36,8 @@ class _DBProvider {
           final query = "CREATE TABLE ${table.tableName} ("
               "${table.paramsAsStr()}"
               ")";
-          print(query);
+          // TODO remove print
+          f.debugPrint(query);
           await db.execute(query);
         }
 
