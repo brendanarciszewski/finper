@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
+import 'data.dart';
 
 final dbProvider = new _DBProvider();
 final accountsV1 = new _AccountsTable.v1();
@@ -28,10 +29,13 @@ class _DBProvider {
     return await openDatabase(path, version: 1,
       onConfigure: (Database db) async {},
       onCreate: (Database db, int version) async {
-        for (var i = 0; i < tables.length; i++) {
-          await db.execute("CREATE TABLE ${tables[i].tableName} ("
-              "${tables[i].paramsAsStr()}"
+        for (var table in tables) {
+          await db.execute("CREATE TABLE ${table.tableName} ("
+              "${table.paramsAsStr()}"
               ")");
+        }
+        for (var category in Category.defaultCategories) {
+          await categoriesV1.newRowWith(category.toJson());
         }
       },
       onUpgrade: (Database db, int oldVersion, int newVersion) async {},
