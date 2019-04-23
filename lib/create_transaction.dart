@@ -11,6 +11,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
   final _formKey = new GlobalKey<FormState>();
   Category _category;
   Category _subcategory;
+  DateTime _time;
   Future<List<Category>> _storedCategoriesFuture;
 
   @override
@@ -48,7 +49,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                     validator: (value) {
                       if (value.isEmpty) return 'Enter cost!';
                     },
-                    keyboardType: TextInputType.numberWithOptions(signed: true, decimal: true),
+                    keyboardType: TextInputType.numberWithOptions(
+                        signed: true, decimal: true),
                     decoration: new InputDecoration(
                       icon: new Icon(Icons.attach_money),
                       hintText: 'Enter the Total',
@@ -66,13 +68,31 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                     },
                   ),
                   new DropdownButton<Category>(
-                    items: listToDropdownList(this._category != null ? this._category.subcategories : []),
+                    items: listToDropdownList(this._category != null
+                        ? this._category.subcategories
+                        : []),
                     value: this._subcategory,
                     hint: const Text('Choose a Subcategory'),
                     onChanged: (Category subcategory) {
                       setState(() {
                         this._subcategory = subcategory;
                       });
+                    },
+                  ),
+                  new RaisedButton(
+                    onPressed: () async {
+                      final date = await showDatePicker(
+                          context: context,
+                          firstDate: DateTime(1970),
+                          initialDate: DateTime.now(),
+                          lastDate: DateTime.now().add(Duration(days: 367)),
+                      );
+                      final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now()
+                      );
+                      _time = DateTime(date.year, date.month, date.day,
+                          time.hour, time.minute);
                     },
                   ),
                 ],
