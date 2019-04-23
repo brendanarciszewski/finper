@@ -5,7 +5,7 @@ import 'db.dart';
 
 mixin HasTable {
   Table get _table;
-  dynamic get _primaryKey;
+  int get id;
   Map<String, dynamic> toJson();
 
   Future<int> addToDB() async {
@@ -16,18 +16,28 @@ mixin HasTable {
     var db = await dbProvider.database;
     return db.delete(_table.tableName,
         where: "${_table.params[0].name} = ?",
-        whereArgs: [_primaryKey]);
+        whereArgs: [id]);
+  }
+
+  Future<int> updateObj(HasTable newObj) async {
+    assert(newObj.id == this.id);
+    assert(newObj._table.tableName == this._table.tableName);
+    var db = await dbProvider.database;
+    return db.update(_table.tableName,
+        newObj.toJson(),
+        where: "${Param.id().name} = ?",
+        whereArgs: [newObj.id]);
   }
 }
 
 class Category with HasTable {
-  int id;
-  String name;
-  List<Category> subcategories;
-  static final __table = categoriesV1;
+  final int id;
+  final String name;
 
-  String get _primaryKey => name;
-  Table get _table => __table;
+  List<Category> subcategories;
+  static final table = categoriesV1;
+
+  Table get _table => table;
 
   Category(this.id, this.name, this.subcategories);
   Category.subcategory(String name) : this(null, name, []);
@@ -37,11 +47,11 @@ class Category with HasTable {
     ).toList();
   }
   factory Category.fromJson(Map<String, dynamic> map) {
-    assert(__table.params.length == 3);
+    assert(table.params.length == 3);
     return Category.fromStr(
-        map[__table.params[0].name],
-        map[__table.params[1].name],
-        List<String>.from(jsonDecode(map[__table.params[2].name]))
+        map[table.params[0].name],
+        map[table.params[1].name],
+        List<String>.from(jsonDecode(map[table.params[2].name]))
     );
   }
 
@@ -54,7 +64,7 @@ class Category with HasTable {
   };
 
   static Future<List<Category>> get categories async {
-    var res = await (await dbProvider.database).query(__table.tableName);
+    var res = await (await dbProvider.database).query(table.tableName);
     var list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Category.fromJson(map)).toList()
         : [];
@@ -116,22 +126,21 @@ class Category with HasTable {
 }
 
 class Account with HasTable {
-  int id;
+  final int id;
   String name;
   double amount;
-  static final  __table = accountsV1;
+  static final  table = accountsV1;
 
-  String get _primaryKey => name;
-  Table get _table => __table;
+  Table get _table => table;
 
   Account(this.id, this.name, this.amount);
   Account.initial(int id, String name) : this(id, name, 0.0);
   factory Account.fromJson(Map<String, dynamic> map) {
-    assert(__table.params.length == 3);
+    assert(table.params.length == 3);
     return Account(
-      map[__table.params[0].name],
-      map[__table.params[1].name],
-      map[__table.params[2].name]
+      map[table.params[0].name],
+      map[table.params[1].name],
+      map[table.params[2].name]
     );
   }
 
@@ -142,7 +151,7 @@ class Account with HasTable {
   };
 
   static Future<List<Account>> get accounts async {
-    var res = await (await dbProvider.database).query(__table.tableName);
+    var res = await (await dbProvider.database).query(table.tableName);
     var list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Account.fromJson(map)).toList()
         : [];
@@ -151,7 +160,7 @@ class Account with HasTable {
 }
 
 class Transaction with HasTable {
-  int id;
+  final int id;
   double amount;
   String account;
   String vendor;
@@ -160,25 +169,24 @@ class Transaction with HasTable {
   String subcategory;
   Object receipt;
   int transferId;
-  static final __table = transactionsV1;
+  static final table = transactionsV1;
 
-  int get _primaryKey => id;
-  Table get _table => __table;
+  Table get _table => table;
 
   Transaction(this.id, this.amount, this.account, this.vendor, this.dt,
       this.category, this.subcategory, [this.receipt, this.transferId]);
   factory Transaction.fromJson(Map<String, dynamic> map) {
-    assert(__table.params.length == 9);
+    assert(table.params.length == 9);
     return Transaction(
-      map[__table.params[0].name],
-      map[__table.params[1].name],
-      map[__table.params[2].name],
-      map[__table.params[3].name],
-      DateTime.parse(map[__table.params[4].name]).toLocal(),
-      map[__table.params[5].name],
-      map[__table.params[6].name],
-      map[__table.params[7].name],
-      map[__table.params[8].name]
+      map[table.params[0].name],
+      map[table.params[1].name],
+      map[table.params[2].name],
+      map[table.params[3].name],
+      DateTime.parse(map[table.params[4].name]).toLocal(),
+      map[table.params[5].name],
+      map[table.params[6].name],
+      map[table.params[7].name],
+      map[table.params[8].name]
     );
   }
 
@@ -195,7 +203,7 @@ class Transaction with HasTable {
   };
 
   static Future<List<Transaction>> get transactions async {
-    var res = await (await dbProvider.database).query(__table.tableName);
+    var res = await (await dbProvider.database).query(table.tableName);
     var list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Transaction.fromJson(map)).toList()
         : [];
