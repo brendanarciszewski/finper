@@ -12,7 +12,7 @@ final transactionsV1 = new _TransactionsTable.v1();
 class _DBProvider {
   _DBProvider();
   static Database _database;
-  final tables = <_Table>[
+  final tables = <Table>[
     accountsV1,
     categoriesV1,
     transactionsV1
@@ -52,7 +52,7 @@ class _DBProvider {
   }
 }
 
-mixin _Table {
+mixin Table {
   List<Param> get params;
   String get tableName;
 
@@ -65,33 +65,36 @@ mixin _Table {
   }
 }
 
-class _AccountsTable with _Table {
+class _AccountsTable with Table {
   _AccountsTable.v1() : tableName = 'Accounts_v1',
         params = [
-          Param('name', SQLTypes.TEXT, isPrimary: true),
+          Param.id(),
+          Param('name', SQLTypes.TEXT),
           Param('amount', SQLTypes.INTEGER),
         ];
   final tableName;
   final params;
 }
 
-class _CategoriesTable with _Table {
+class _CategoriesTable with Table {
   _CategoriesTable.v1() : tableName = 'Categories_v1',
         params = [
-          Param('category', SQLTypes.TEXT, isPrimary: true),
+          Param.id(),
+          Param('category', SQLTypes.TEXT),
           Param('subcategories', SQLTypes.TEXT)
         ];
   final tableName;
   final params;
 }
 
-class _TransactionsTable with _Table {
+class _TransactionsTable with Table {
   _TransactionsTable.v1() : tableName = 'Transactions_v1',
         params = [
-          Param('id', SQLTypes.INTEGER, isPrimary: true),
+          Param.id(),
           Param('amount', SQLTypes.INTEGER),
           Param('account', SQLTypes.TEXT),
           Param('vendor', SQLTypes.TEXT),
+          Param('datetime_ISO8601', SQLTypes.TEXT),
           Param('category', SQLTypes.TEXT),
           Param('subcategory', SQLTypes.TEXT),
           Param('receipt', SQLTypes.BLOB, isNullable: true),
@@ -106,7 +109,9 @@ class Param {
   final bool isNullable;
   final bool isPrimary;
   final SQLTypes type;
+
   Param(this.name, this.type, {this.isNullable=false, this.isPrimary=false});
+  Param.id() : this('id', SQLTypes.INTEGER, isPrimary: true);
 
   String get typeAsStr {
     switch (type) {
