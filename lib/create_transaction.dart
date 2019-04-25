@@ -16,7 +16,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
   Category _subcategory;
   Account _account; // TODO implement
   DateTime _dateTime;
-  double _amount, _sign = 0.0;
+  double _amount;
+  double _sign = 0.0;
   String _vendor;
   bool _submitted = false;
 
@@ -168,41 +169,60 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                           hintText: "Choose a Subcategory",
                         ),
                       ),
-                      new FormField<RaisedButton>(
-                        builder: (FormFieldState<RaisedButton> field) {
-                          return new RaisedButton(
-                            child: Text('${ this._dateTime != null
-                                ? new DateFormat("yyyy-MM-dd '@' HH:mm")
-                                .format(this._dateTime)
-                                : 'Pick Date'}'),
-                            onPressed: () async {
-                              final date = await showDatePicker(
-                                context: context,
-                                firstDate: DateTime(1970),
-                                initialDate: DateTime.now(),
-                                lastDate: DateTime.now().add(Duration(days: 367)),
+                      new Row(
+                        children: <Widget>[
+                          const Icon(Icons.date_range),
+                          const Spacer(flex: 7,),
+                          new Expanded(
+                            child: new Text('${this._dateTime != null
+                              ? new DateFormat("yyyy-MM-dd '@' HH:mm")
+                              .format(this._dateTime)
+                              : ''}'),
+                            flex: 91,
+                          ),
+                          new FormField<RaisedButton>(
+                            builder: (FormFieldState<RaisedButton> field) {
+                              return new RaisedButton(
+                                child: const Text('Pick Date'),
+                                onPressed: () async {
+                                  final date = await showDatePicker(
+                                    context: context,
+                                    firstDate: DateTime(1970),
+                                    initialDate: DateTime.now(),
+                                    lastDate: DateTime.now().add(Duration(days: 367)),
+                                  );
+                                  final time = await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.now()
+                                  );
+                                  setState(() {
+                                    this._dateTime = DateTime(date.year, date.month,
+                                        date.day, time.hour, time.minute);
+                                  });
+                                },
                               );
-                              final time = await showTimePicker(
-                                  context: context,
-                                  initialTime: TimeOfDay.now()
-                              );
-                              setState(() {
-                                this._dateTime = DateTime(date.year, date.month,
-                                    date.day, time.hour, time.minute);
-                              });
                             },
-                          );
-                        },
-                        /*validator: (RaisedButton val) {
-                          if (this._dateTime == null) return 'Pick Date & Time!';
-                        },*/
+                            /*validator: (RaisedButton val) {
+                              if (this._dateTime == null) return 'Pick Date & Time!';
+                            },*/
+                          ),
+                          const Spacer(flex: 2),
+                        ],
                       ),
                       new RaisedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (_formKey.currentState.validate()) {
-                            setState(() {
-                              _submitted = true;
+                            _formKey.currentState.save();
+
+                            Transaction.getNextId().then((int id) {
+                              final cost = _amount * _sign;
+                              Transaction(id, cost, _account.name, _vendor,
+                                  _dateTime, _category.name, _subcategory.name)
+                                  .addToDb();
+                              _account.amount += cost;
+                              _account.updateInDb();
                             });
+
                             Scaffold
                                 .of(context)
                                 .showSnackBar(

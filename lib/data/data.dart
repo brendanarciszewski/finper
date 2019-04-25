@@ -12,28 +12,27 @@ mixin HasTable {
     final colName = 'MAX(${Param.id().name})';
     final curIdResp =  await db.query(_table.tableName,
         columns: [colName]);
-    return curIdResp[0][colName] + 1;
+    print(curIdResp);
+    return (curIdResp[0][colName] ?? 0) + 1;
   }
 
-  Future<int> addToDB() async {
+  Future<int> addToDb() async {
     return _table.newRowWith(await dbProvider.db, this.toJson());
   }
 
-  Future<int> rmFromDB() async {
+  Future<int> rmFromDb() async {
     var db = await dbProvider.db;
     return db.delete(_table.tableName,
         where: "${Param.id().name} = ?",
         whereArgs: [id]);
   }
 
-  Future<int> updateObj(HasTable newObj) async {
-    assert(newObj.id == this.id);
-    assert(newObj._table.tableName == this._table.tableName);
+  Future<int> updateInDb() async {
     var db = await dbProvider.db;
     return db.update(_table.tableName,
-        newObj.toJson(),
+        this.toJson(),
         where: "${Param.id().name} = ?",
-        whereArgs: [newObj.id]);
+        whereArgs: [this.id]);
   }
 }
 
@@ -182,6 +181,7 @@ class Transaction with HasTable {
 
   Transaction(this.id, this.amount, this.account, this.vendor, this.dt,
       this.category, this.subcategory, [this.receipt, this.transferId]);
+  Transaction._ofNull() : this(0, 0, null, null, null, null, null);
   factory Transaction.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 9);
     return Transaction(
@@ -196,6 +196,8 @@ class Transaction with HasTable {
       map[table.params[8].name]
     );
   }
+
+  static Future<int> getNextId() => Transaction._ofNull().nextId();
 
   Map<String, dynamic> toJson() => {
     _table.params[0].name : id,
