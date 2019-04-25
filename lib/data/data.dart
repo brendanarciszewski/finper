@@ -7,21 +7,29 @@ mixin HasTable {
   int get id;
   Map<String, dynamic> toJson();
 
+  Future<int> nextId() async {
+    var db = await dbProvider.db;
+    final colName = 'MAX(${Param.id().name})';
+    final curIdResp =  await db.query(_table.tableName,
+        columns: [colName]);
+    return curIdResp[0][colName] + 1;
+  }
+
   Future<int> addToDB() async {
-    return _table.newRowWith(await dbProvider.database, this.toJson());
+    return _table.newRowWith(await dbProvider.db, this.toJson());
   }
 
   Future<int> rmFromDB() async {
-    var db = await dbProvider.database;
+    var db = await dbProvider.db;
     return db.delete(_table.tableName,
-        where: "${_table.params[0].name} = ?",
+        where: "${Param.id().name} = ?",
         whereArgs: [id]);
   }
 
   Future<int> updateObj(HasTable newObj) async {
     assert(newObj.id == this.id);
     assert(newObj._table.tableName == this._table.tableName);
-    var db = await dbProvider.database;
+    var db = await dbProvider.db;
     return db.update(_table.tableName,
         newObj.toJson(),
         where: "${Param.id().name} = ?",
@@ -63,7 +71,7 @@ class Category with HasTable {
   };
 
   static Future<List<Category>> get categories async {
-    var res = await (await dbProvider.database).query(table.tableName);
+    var res = await (await dbProvider.db).query(table.tableName);
     var list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Category.fromJson(map)).toList()
         : [];
@@ -150,7 +158,7 @@ class Account with HasTable {
   };
 
   static Future<List<Account>> get accounts async {
-    var res = await (await dbProvider.database).query(table.tableName);
+    var res = await (await dbProvider.db).query(table.tableName);
     var list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Account.fromJson(map)).toList()
         : [];
@@ -202,7 +210,7 @@ class Transaction with HasTable {
   };
 
   static Future<List<Transaction>> get transactions async {
-    var res = await (await dbProvider.database).query(table.tableName);
+    var res = await (await dbProvider.db).query(table.tableName);
     var list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Transaction.fromJson(map)).toList()
         : [];

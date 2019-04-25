@@ -18,7 +18,7 @@ class _DBProvider {
     transactionsV1
   ];
 
-  Future<Database> get database async {
+  Future<Database> get db async {
     if (_database != null) return _database;
     _database = await _getDB();
     return _database;
