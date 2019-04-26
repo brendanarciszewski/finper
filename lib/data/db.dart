@@ -120,6 +120,7 @@ class Param {
       case SQLTypes.TEXT: return 'TEXT';
       case SQLTypes.BLOB: return 'BLOB';
     }
+    return null; // Not possible to reach, but suppresses warning
   }
 
   String get notNullStr {

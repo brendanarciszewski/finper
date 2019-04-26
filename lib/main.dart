@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'create_transaction.dart';
+import 'views/create_transaction.dart';
+import 'views/accounts_list.dart';
+import 'views/transactions_list.dart';
 
 void main() => runApp(new App());
 
@@ -16,11 +18,17 @@ class App extends StatelessWidget {
   }
 }
 
+class HomePage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => new _HomePageState();
+}
+
 class _HomePageState extends State<HomePage> {
   var _currentIndex = 0;
   final _children = <Widget>[
     new CreateTransactionForm(),
-    new PlaceholderWidget(Colors.green),
+    new TransactionsList(),
+    new AccountsList(),
   ];
 
   @override
@@ -45,8 +53,12 @@ class _HomePageState extends State<HomePage> {
             title: const Text('Create'),
           ),
           const BottomNavigationBarItem(
-            icon: const Icon(Icons.toc),
-            title: const Text('List'),
+            icon: const Icon(Icons.view_stream),
+            title: const Text('Transactions'),
+          ),
+          const BottomNavigationBarItem(
+            icon: const Icon(Icons.account_balance),
+            title: const Text('Accounts'),
           ),
         ],
       ),
@@ -57,23 +69,5 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentIndex = index;
     });
-  }
-}
-
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => new _HomePageState();
-}
-
-class PlaceholderWidget extends StatelessWidget {
-  final Color color;
-
-  PlaceholderWidget(this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return new Container(
-      color: color,
-    );
   }
 }

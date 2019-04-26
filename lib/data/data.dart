@@ -12,7 +12,7 @@ mixin HasTable {
     final colName = 'MAX(${Param.id().name})';
     final curIdResp =  await db.query(_table.tableName,
         columns: [colName]);
-    print(curIdResp);
+    print(curIdResp); // TODO remove print
     return (curIdResp[0][colName] ?? 0) + 1;
   }
 
@@ -70,8 +70,8 @@ class Category with HasTable {
   };
 
   static Future<List<Category>> get categories async {
-    var res = await (await dbProvider.db).query(table.tableName);
-    var list = res.isNotEmpty
+    final res = await (await dbProvider.db).query(table.tableName);
+    List<Category> list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Category.fromJson(map)).toList()
         : [];
     return list;
@@ -157,8 +157,8 @@ class Account with HasTable {
   };
 
   static Future<List<Account>> get accounts async {
-    var res = await (await dbProvider.db).query(table.tableName);
-    var list = res.isNotEmpty
+    final res = await (await dbProvider.db).query(table.tableName);
+    List<Account> list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Account.fromJson(map)).toList()
         : [];
     return list;
@@ -181,7 +181,7 @@ class Transaction with HasTable {
 
   Transaction(this.id, this.amount, this.account, this.vendor, this.dt,
       this.category, this.subcategory, [this.receipt, this.transferId]);
-  Transaction._ofNull() : this(0, 0, null, null, null, null, null);
+  Transaction._ofNull() : this(0, null, null, null, null, null, null);
   factory Transaction.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 9);
     return Transaction(
@@ -212,8 +212,8 @@ class Transaction with HasTable {
   };
 
   static Future<List<Transaction>> get transactions async {
-    var res = await (await dbProvider.db).query(table.tableName);
-    var list = res.isNotEmpty
+    final res = await (await dbProvider.db).query(table.tableName);
+    List<Transaction> list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Transaction.fromJson(map)).toList()
         : [];
     return list;
