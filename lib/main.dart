@@ -11,7 +11,7 @@ class App extends StatelessWidget {
     return new MaterialApp(
       title: 'Welcome to Flutter',
       theme: new ThemeData(
-        primaryColor: Colors.blue,
+        primaryColor: Colors.orange[600],
       ),
       home: new HomePage(),
     );

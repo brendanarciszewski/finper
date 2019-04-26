@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/data.dart';
+import 'package:finper/data/data.dart';
 import 'package:finper/widgets/default_future_builder.dart';
 
 class TransactionsList extends StatefulWidget {
@@ -25,7 +25,7 @@ class _TransactionsListState extends State<TransactionsList> {
           return Center(child: Text('Create a Transaction'),);
         return new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
-
+            return new _TransactionItem(transactions[index]);
           },
           itemCount: transactions.length,
         );
@@ -35,7 +35,7 @@ class _TransactionsListState extends State<TransactionsList> {
 }
 
 class _TransactionItem extends StatelessWidget {
-  final Account _transaction;
+  final Transaction _transaction;
   _TransactionItem(this._transaction);
 
   @override

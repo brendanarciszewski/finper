@@ -2,6 +2,10 @@ import 'dart:convert';
 
 import 'db.dart';
 
+mixin Named {
+  String get name;
+}
+
 mixin HasTable {
   Table get _table;
   int get id;
@@ -36,7 +40,7 @@ mixin HasTable {
   }
 }
 
-class Category with HasTable {
+class Category with HasTable, Named {
   final int id;
   final String name;
 
@@ -131,7 +135,7 @@ class Category with HasTable {
   ];
 }
 
-class Account with HasTable {
+class Account with HasTable, Named {
   final int id;
   String name;
   double amount;

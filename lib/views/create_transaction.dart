@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import '../data/data.dart';
+import 'package:finper/data/data.dart';
 import 'package:finper/widgets/default_future_builder.dart';
 
 class CreateTransactionForm extends StatefulWidget {
@@ -22,34 +22,31 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
   String _vendor;
   bool _submitted = false;
 
-  Future<List<Category>> _storedCategoriesFuture;
+  Future<List<Category>> _categoriesFuture;
+  Future<List<Account>> _accountsFuture;
 
   @override
   void initState() {
-    _storedCategoriesFuture = Category.categories;
+    _categoriesFuture = Category.categories;
+    _accountsFuture = Account.accounts;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return new DefaultFutureBuilder<List<Category>>(
-      this._storedCategoriesFuture,
-      (BuildContext context, List<Category> categories) {
-        return new ListView(
-          children: <Widget>[
-            new Form(
-              key: this._formKey,
-              child: new Column(
-                children: _visibleWidgets(categories),
-              ),
-            ),
-          ],
-        );
-      }
+    return new ListView(
+      children: <Widget>[
+        new Form(
+          key: this._formKey,
+          child: new Column(
+            children: _visibleWidgets(),
+          ),
+        ),
+      ],
     );
   }
 
-  List<Widget> _visibleWidgets(List<Category> categories) {
+  List<Widget> _visibleWidgets() {
     return <Widget>[
       new Row(
           children: <Widget>[
@@ -89,7 +86,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                       },
                       min: -1.0,
                       max: 1.0,
-                      divisions: 1,
+                      divisions: 2,
                       value: this._sign,
                     )
                 );
@@ -132,25 +129,51 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           hintText: "Enter the Vendor's Name",
         ),
       ),
-      new DropdownButtonFormField<Category>(
-        items: listToDropdownList(categories),
-        value: this._category,
-        onChanged: (Category category) {
-          setState(() {
-            this._category = category;
-            this._subcategory = null;
-          });
-        },
-        validator: (Category category) {
-          if (category == null) return 'Choose a Category';
-        },
-        decoration: new InputDecoration(
-          icon: new Icon(Icons.category),
-          hintText: "Choose a Category",
-        ),
+      new DefaultFutureBuilder<List<Account>>(
+        this._accountsFuture,
+        (BuildContext context, List<Account> accounts) {
+          return new DropdownButtonFormField<Account>(
+            items: listToDropdownList<Account>(accounts),
+            value: this._account,
+            validator: (Account account) {
+              if (this._account == null) return 'Pick an Account!';
+            },
+            onChanged: (Account account) {
+              setState(() {
+                this._account = account;
+              });
+            },
+            decoration: new InputDecoration(
+              icon: Icon(Icons.account_balance_wallet),
+              hintText: 'Choose an Account',
+            ),
+          );
+        }
+      ),
+      new DefaultFutureBuilder<List<Category>>(
+        this._categoriesFuture,
+        (BuildContext context, List<Category> categories) {
+          return new DropdownButtonFormField<Category>(
+            items: listToDropdownList<Category>(categories),
+            value: this._category,
+            onChanged: (Category category) {
+              setState(() {
+                this._category = category;
+                this._subcategory = null;
+              });
+            },
+            validator: (Category category) {
+              if (category == null) return 'Choose a Category';
+            },
+            decoration: new InputDecoration(
+              icon: new Icon(Icons.category),
+              hintText: "Choose a Category",
+            ),
+          );
+        }
       ),
       new DropdownButtonFormField<Category>(
-        items: listToDropdownList(this._category != null
+        items: listToDropdownList<Category>(this._category != null
             ? this._category.subcategories
             : []),
         value: this._subcategory,
@@ -233,11 +256,11 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
   }
 }
 
-List<DropdownMenuItem<Category>> listToDropdownList(List<Category> categories) {
-  return categories
-      .map((Category category) => new DropdownMenuItem<Category>(
-            value: category,
-            child: new Text(category.name),
+List<DropdownMenuItem<T>> listToDropdownList<T extends Named>(List<T> items) {
+  return items
+      .map((T item) => new DropdownMenuItem<T>(
+            value: item,
+            child: new Text(item.name),
           ))
       .toList();
 }
