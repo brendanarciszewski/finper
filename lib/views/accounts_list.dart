@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../data/data.dart';
 import 'package:finper/widgets/default_future_builder.dart';
 
@@ -40,8 +41,11 @@ class _AccountItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Center(
-      child: Text('${_account.name}: \$${_account.amount}'),
+    final f = new NumberFormat.currency(symbol: '\$',);
+    return new Container(
+      child: new Text('${_account.name}: ${f.format(_account.amount)}'),
+      padding: const EdgeInsets.all(8.0),
+      alignment: Alignment.centerLeft,
     );
   }
 }

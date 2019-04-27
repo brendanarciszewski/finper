@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:finper/data/data.dart';
 import 'package:finper/widgets/default_future_builder.dart';
 
@@ -40,6 +41,16 @@ class _TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Text('TODO');
+    final nF = new NumberFormat.currency(symbol: '\$',);
+    final dF = new DateFormat("yyyy-MM-dd '@' HH:mm");
+    return new Container(
+      child: new Text(
+        '${nF.format(_transaction.amount)}: ${_transaction.vendor}\n'
+        '${_transaction.category}->${_transaction.subcategory}\n'
+        '${dF.format(_transaction.dt)}'
+      ),
+      padding: const EdgeInsets.all(8.0),
+      alignment: Alignment.centerLeft,
+    );
   }
 }
