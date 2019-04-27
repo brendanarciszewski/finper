@@ -186,6 +186,15 @@ class Transaction with HasTable {
   Transaction(this.id, this.amount, this.account, this.vendor, this.dt,
       this.category, this.subcategory, [this.receipt, this.transferId]);
   Transaction._ofNull() : this(0, null, null, null, null, null, null);
+  Transaction.transferFrom(this.id, this.amount, this.account, Transaction t) {
+    this.vendor = t.vendor;
+    this.dt = t.dt;
+    this.category = t.category;
+    this.subcategory = t.subcategory;
+    this.receipt = t.receipt;
+    this.transferId = t.id;
+    t.transferId = this.id; // Objects are passed by reference
+  }
   factory Transaction.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 9);
     return Transaction(

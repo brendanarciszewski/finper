@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:finper/data/data.dart';
 import 'package:finper/widgets/default_future_builder.dart';
@@ -15,12 +14,12 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
 
   Category _category;
   Category _subcategory;
-  Account _account; // TODO implement
+  Account _fromAccount;
+  Account _toAccount;
   DateTime _dateTime;
   double _amount;
   double _sign = 0.0;
   String _vendor;
-  bool _submitted = false;
 
   Future<List<Category>> _categoriesFuture;
   Future<List<Account>> _accountsFuture;
@@ -129,26 +128,55 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           hintText: "Enter the Vendor's Name",
         ),
       ),
-      new DefaultFutureBuilder<List<Account>>(
-        this._accountsFuture,
-        (BuildContext context, List<Account> accounts) {
-          return new DropdownButtonFormField<Account>(
-            items: listToDropdownList<Account>(accounts),
-            value: this._account,
-            validator: (Account account) {
-              if (this._account == null) return 'Pick an Account!';
-            },
-            onChanged: (Account account) {
-              setState(() {
-                this._account = account;
-              });
-            },
-            decoration: new InputDecoration(
-              icon: Icon(Icons.account_balance_wallet),
-              hintText: 'Choose an Account',
-            ),
-          );
-        }
+      new Visibility(
+        visible: this._sign <= 0.0,
+        child: new DefaultFutureBuilder<List<Account>>(
+          this._accountsFuture,
+          (BuildContext context, List<Account> accounts) {
+            return new DropdownButtonFormField<Account>(
+              items: listToDropdownList<Account>(accounts),
+              value: this._fromAccount,
+              validator: (Account account) {
+                if (this._fromAccount == null && this._sign <= 0.0)
+                  return 'Pick account!';
+              },
+              onChanged: (Account account) {
+                setState(() {
+                  this._fromAccount = account;
+                });
+              },
+              decoration: new InputDecoration(
+                icon: Icon(Icons.account_balance_wallet),
+                hintText: 'Account Withdrawn From',
+              ),
+            );
+          }
+        ),
+      ),
+      new Visibility(
+        visible: this._sign >= 0.0,
+        child: new DefaultFutureBuilder<List<Account>>(
+            this._accountsFuture,
+                (BuildContext context, List<Account> accounts) {
+              return new DropdownButtonFormField<Account>(
+                items: listToDropdownList<Account>(accounts),
+                value: this._toAccount,
+                validator: (Account account) {
+                  if (this._toAccount == null && this._sign >= 0.0)
+                    return 'Pick account!';
+                },
+                onChanged: (Account account) {
+                  setState(() {
+                    this._toAccount = account;
+                  });
+                },
+                decoration: new InputDecoration(
+                  icon: Icon(Icons.account_balance_wallet),
+                  hintText: 'Account Deposited To',
+                ),
+              );
+            }
+        ),
       ),
       new DefaultFutureBuilder<List<Category>>(
         this._categoriesFuture,
@@ -163,7 +191,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
               });
             },
             validator: (Category category) {
-              if (category == null) return 'Choose a Category';
+              if (category == null) return 'Choose category!';
             },
             decoration: new InputDecoration(
               icon: new Icon(Icons.category),
@@ -183,7 +211,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           });
         },
         validator: (Category category) {
-          if (category == null) return 'Choose a Subcategory';
+          if (category == null) return 'Choose category!';
         },
         decoration: new InputDecoration(
           icon: new Icon(Icons.category),
@@ -231,17 +259,42 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         ],
       ),
       new RaisedButton(
-        onPressed: () async {
+        onPressed: () {
           if (_formKey.currentState.validate()) {
             _formKey.currentState.save();
 
-            Transaction.getNextId().then((int id) {
-              final cost = _amount * _sign;
-              Transaction(id, cost, _account.name, _vendor,
-                  _dateTime, _category.name, _subcategory.name)
-                  .addToDb();
-              _account.amount += cost;
-              _account.updateInDb();
+            Transaction.getNextId().then((int id1) async {
+              var transaction1 = Transaction(id1, null, null, _vendor,
+                  _dateTime, _category.name, _subcategory.name);
+              if (_sign == 0.0) {
+                //Is a transfer
+                transaction1.amount = -_amount;
+                transaction1.account = _fromAccount.name;
+                await transaction1.addToDb();
+                _fromAccount.amount -= _amount;
+                await _fromAccount.updateInDb();
+                Transaction.getNextId().then((int id2) async {
+                  final transaction2 = Transaction.transferFrom(id2, _amount,
+                      _toAccount.name, transaction1);
+                  await transaction2.addToDb();
+                  _toAccount.amount += _amount;
+                  await _toAccount.updateInDb();
+                });
+              } else if (_sign < 0.0) {
+                //Is a withdrawl
+                transaction1.amount = -_amount;
+                transaction1.account = _fromAccount.name;
+                await transaction1.addToDb();
+                _fromAccount.amount -= _amount;
+                await _fromAccount.updateInDb();
+              } else if (_sign > 0.0) {
+                //Is a deposit
+                transaction1.amount = _amount;
+                transaction1.account = _toAccount.name;
+                await transaction1.addToDb();
+                _toAccount.amount += _amount;
+                await _toAccount.updateInDb();
+              }
             });
 
             Scaffold
@@ -250,7 +303,11 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                 SnackBar(content: Text('Processing Data')));
           }
         },
-        child: new Text('Submit $_submitted'),
+        child: new Text(
+            'Submit ${_sign < 0.0
+                ? 'Withdrawl'
+                : (_sign > 0.0 ? 'Deposit' : 'Transfer')}'
+        ),
       ),
     ];
   }
