@@ -70,7 +70,7 @@ class _AccountsTable with Table {
         params = [
           Param.id(),
           Param('name', SQLTypes.TEXT),
-          Param('amount', SQLTypes.INTEGER),
+          Param('amount', SQLTypes.REAL),
         ];
   final tableName;
   final params;
@@ -91,7 +91,7 @@ class _TransactionsTable with Table {
   _TransactionsTable.v1() : tableName = 'Transactions_v1',
         params = [
           Param.id(),
-          Param('amount', SQLTypes.INTEGER),
+          Param('amount', SQLTypes.REAL),
           Param('account', SQLTypes.TEXT),
           Param('vendor', SQLTypes.TEXT),
           Param('datetime_ISO8601', SQLTypes.TEXT),

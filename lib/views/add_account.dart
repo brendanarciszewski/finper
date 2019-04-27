@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:finper/data/data.dart';
 
-class CreateTransactionForm extends StatefulWidget {
+class AddAccountForm extends StatefulWidget {
   @override
   State<StatefulWidget> createState() =>
-      new _CreateTransactionFormState();
+      new _AddAccountFormState();
 }
 
-class _CreateTransactionFormState extends State<CreateTransactionForm> {
+class _AddAccountFormState extends State<AddAccountForm> {
   final _formKey = new GlobalKey<FormState>();
 
   double _amount;
@@ -73,10 +73,6 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                     )
                 );
               },
-              /*validator: (SliderTheme data) {
-                              if (this._sign != 1.0 || this._sign != -1.0)
-                                return 'Is this an expense or income?';
-                            },*/
             ),
             const Spacer(),
             const Text('Positive'),
@@ -85,8 +81,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
       ),
       new TextFormField(
         validator: (String value) {
-          if (value.isEmpty) return 'Enter cost!';
-          if (double.tryParse(value) == null) return 'Enter cost!';
+          if (value.isEmpty) return 'Enter amount!';
+          if (double.tryParse(value) == null) return 'Enter amount!';
         },
         onSaved: (String value) {
           this._amount = double.parse(value);
@@ -95,7 +91,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             signed: false, decimal: true),
         decoration: new InputDecoration(
           icon: new Icon(Icons.attach_money),
-          hintText: 'Enter the Total',
+          hintText: 'Enter Current Account Balance',
         ),
       ),
       new TextFormField(
@@ -107,7 +103,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         },
         keyboardType: TextInputType.text,
         decoration: new InputDecoration(
-          icon: new Icon(Icons.business),
+          icon: new Icon(Icons.account_balance_wallet),
           hintText: "Enter the Account Name",
         ),
       ),
@@ -119,6 +115,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             Account.getNextId().then((int id) async {
               final account = Account(id, _name, _amount*_sign);
               await account.addToDb();
+              Navigator.pop(context);
             });
 
             Scaffold

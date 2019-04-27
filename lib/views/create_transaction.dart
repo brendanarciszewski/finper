@@ -90,10 +90,6 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                     )
                 );
               },
-              /*validator: (SliderTheme data) {
-                              if (this._sign != 1.0 || this._sign != -1.0)
-                                return 'Is this an expense or income?';
-                            },*/
             ),
             const Spacer(),
             const Text('Income'),
@@ -136,7 +132,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             return new DropdownButtonFormField<Account>(
               items: listToDropdownList<Account>(accounts),
               value: this._fromAccount,
-              validator: (Account account) {
+              validator: (_) {
                 if (this._fromAccount == null && this._sign <= 0.0)
                   return 'Pick account!';
               },
@@ -161,7 +157,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
               return new DropdownButtonFormField<Account>(
                 items: listToDropdownList<Account>(accounts),
                 value: this._toAccount,
-                validator: (Account account) {
+                validator: (_) {
                   if (this._toAccount == null && this._sign >= 0.0)
                     return 'Pick account!';
                 },
@@ -190,8 +186,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                 this._subcategory = null;
               });
             },
-            validator: (Category category) {
-              if (category == null) return 'Choose category!';
+            validator: (_) {
+              if (this._category == null) return 'Choose category!';
             },
             decoration: new InputDecoration(
               icon: new Icon(Icons.category),
@@ -210,8 +206,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             this._subcategory = subcategory;
           });
         },
-        validator: (Category category) {
-          if (category == null) return 'Choose category!';
+        validator: (_) {
+          if (this._subcategory == null) return 'Choose category!';
         },
         decoration: new InputDecoration(
           icon: new Icon(Icons.category),
@@ -250,57 +246,64 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                   });
                 },
               );
-            },
-            /*validator: (RaisedButton val) {
-                              if (this._dateTime == null) return 'Pick Date & Time!';
-                            },*/
+            }, // TODO add validation (by intercepting clicks on a TextField
+            /*validator: (_) {
+              if (this._dateTime == null) return 'Pick Date & Time!';
+            },*/
           ),
           const Spacer(flex: 2),
         ],
       ),
       new RaisedButton(
-        onPressed: () {
+        onPressed: () async {
           if (_formKey.currentState.validate()) {
-            _formKey.currentState.save();
-
-            Transaction.getNextId().then((int id1) async {
-              var transaction1 = Transaction(id1, null, null, _vendor,
-                  _dateTime, _category.name, _subcategory.name);
-              if (_sign == 0.0) {
-                //Is a transfer
-                transaction1.amount = -_amount;
-                transaction1.account = _fromAccount.name;
-                await transaction1.addToDb();
-                _fromAccount.amount -= _amount;
-                await _fromAccount.updateInDb();
-                Transaction.getNextId().then((int id2) async {
-                  final transaction2 = Transaction.transferFrom(id2, _amount,
-                      _toAccount.name, transaction1);
-                  await transaction2.addToDb();
-                  _toAccount.amount += _amount;
-                  await _toAccount.updateInDb();
-                });
-              } else if (_sign < 0.0) {
-                //Is a withdrawl
-                transaction1.amount = -_amount;
-                transaction1.account = _fromAccount.name;
-                await transaction1.addToDb();
-                _fromAccount.amount -= _amount;
-                await _fromAccount.updateInDb();
-              } else if (_sign > 0.0) {
-                //Is a deposit
-                transaction1.amount = _amount;
-                transaction1.account = _toAccount.name;
-                await transaction1.addToDb();
-                _toAccount.amount += _amount;
-                await _toAccount.updateInDb();
-              }
-            });
-
             Scaffold
                 .of(context)
                 .showSnackBar(
-                SnackBar(content: Text('Processing Data')));
+                const SnackBar(content: const Text('Processing Data')));
+            _formKey.currentState.save();
+
+            final id1 = await Transaction.getNextId();
+            var transaction1 = Transaction(id1, null, null, _vendor,
+                _dateTime, _category.name, _subcategory.name);
+            if (_sign == 0.0) {
+              //Is a transfer
+              transaction1.amount = -_amount;
+              transaction1.account = _fromAccount.name;
+              await transaction1.addToDb();
+              _fromAccount.amount -= _amount;
+              await _fromAccount.updateInDb();
+
+              final id2 = await Transaction.getNextId();
+              final transaction2 = Transaction.transferFrom(id2, _amount,
+                  _toAccount.name, transaction1);
+              await transaction2.addToDb();
+              await transaction1.updateInDb();
+              _toAccount.amount += _amount;
+              await _toAccount.updateInDb();
+            } else if (_sign < 0.0) {
+              //Is a withdrawl
+              transaction1.amount = -_amount;
+              transaction1.account = _fromAccount.name;
+              await transaction1.addToDb();
+              _fromAccount.amount -= _amount;
+              await _fromAccount.updateInDb();
+            } else if (_sign > 0.0) {
+              //Is a deposit
+              transaction1.amount = _amount;
+              transaction1.account = _toAccount.name;
+              await transaction1.addToDb();
+              _toAccount.amount += _amount;
+              await _toAccount.updateInDb();
+            }
+
+            _resetForm();
+
+            Scaffold.of(context).hideCurrentSnackBar();
+            Scaffold
+                .of(context)
+                .showSnackBar(
+                 const SnackBar(content: const Text('Saved Data')));
           }
         },
         child: new Text(
@@ -310,6 +313,20 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         ),
       ),
     ];
+  }
+
+  void _resetForm() {
+    setState(() {
+      _sign = 0.0;
+      _category = null;
+      _subcategory = null;
+      _fromAccount = null;
+      _toAccount = null;
+      _dateTime = null;
+      _amount = null;
+      _vendor = null;
+    });
+    _formKey.currentState.reset();
   }
 }
 
