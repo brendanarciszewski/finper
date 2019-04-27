@@ -14,8 +14,7 @@ mixin HasTable {
   Future<int> nextId() async {
     var db = await dbProvider.db;
     final colName = 'MAX(${Param.id().name})';
-    final curIdResp =  await db.query(_table.tableName,
-        columns: [colName]);
+    final curIdResp = await db.query(_table.tableName, columns: [colName]);
     print(curIdResp); // TODO remove print
     return (curIdResp[0][colName] ?? 0) + 1;
   }
@@ -27,16 +26,13 @@ mixin HasTable {
   Future<int> rmFromDb() async {
     var db = await dbProvider.db;
     return db.delete(_table.tableName,
-        where: "${Param.id().name} = ?",
-        whereArgs: [id]);
+        where: "${Param.id().name} = ?", whereArgs: [id]);
   }
 
   Future<int> updateInDb() async {
     var db = await dbProvider.db;
-    return db.update(_table.tableName,
-        this.toJson(),
-        where: "${Param.id().name} = ?",
-        whereArgs: [this.id]);
+    return db.update(_table.tableName, this.toJson(),
+        where: "${Param.id().name} = ?", whereArgs: [this.id]);
   }
 }
 
@@ -52,26 +48,23 @@ class Category with HasTable, Named {
   Category(this.id, this.name, this.subcategories);
   Category.subcategory(String name) : this(null, name, []);
   Category.fromStr(this.id, this.name, List<String> subcategories) {
-    this.subcategories = subcategories.map(
-            (String s) => new Category.subcategory(s)
-    ).toList();
+    this.subcategories =
+        subcategories.map((String s) => new Category.subcategory(s)).toList();
   }
   factory Category.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 3);
     return Category.fromStr(
         map[table.params[0].name],
         map[table.params[1].name],
-        List<String>.from(jsonDecode(map[table.params[2].name]))
-    );
+        List<String>.from(jsonDecode(map[table.params[2].name])));
   }
 
   Map<String, dynamic> toJson() => {
-    _table.params[0].name : id,
-    _table.params[1].name : name,
-    _table.params[2].name : jsonEncode(
-        subcategories.map((Category c) => c.name).toList()
-    )
-  };
+        _table.params[0].name: id,
+        _table.params[1].name: name,
+        _table.params[2].name:
+            jsonEncode(subcategories.map((Category c) => c.name).toList())
+      };
 
   static Future<List<Category>> get categories async {
     final res = await (await dbProvider.db).query(table.tableName);
@@ -83,12 +76,11 @@ class Category with HasTable, Named {
 
   static final defaultCategories = [
     new Category.fromStr(1, 'Employment/Education', [
-      'Regular Pay',
-      'Occasional/Bonus/Vacation Pay',
-      'Grant',
-      'Portfolio/Passive Income',
+      'Regular Income',
+      'Occasional Income',
+      'Grant/Bursary',
       'Social Services/Tax Payment/Refund',
-      'Tuition',
+      'Tuition/Books',
       'Expense',
       'Other'
     ]),
@@ -102,10 +94,14 @@ class Category with HasTable, Named {
     ]),
     new Category.fromStr(3, 'Health/Personal Care',
         ['Fitness/Sports', 'Insurance/Doctor/Pharmacy', 'Other']),
-    new Category.fromStr(4,
-        'Banking/Investment', ['Fees', 'Loans', 'Interest', 'Other']),
-    new Category.fromStr(5, 'Transportation',
-        ['Transportation Cost (Gas/Tolls)', 'Parking', 'Maintenance', 'Other']),
+    new Category.fromStr(4, 'Banking/Investment',
+        ['Fees', 'Loans', 'Portfolio/Passive Income', 'Other']),
+    new Category.fromStr(5, 'Transportation', [
+      'Transportation Cost (Gas/Tolls/Public Transit)',
+      'Parking',
+      'Maintenance',
+      'Other'
+    ]),
     new Category.fromStr(6, 'Pets', ['Meals', 'Health/Care', 'Other']),
     new Category.fromStr(7, 'Shopping', [
       'Clothing',
@@ -139,26 +135,24 @@ class Account with HasTable, Named {
   final int id;
   String name;
   double amount;
-  static final  table = accountsV1;
+  static final table = accountsV1;
 
   Table get _table => table;
 
   Account(this.id, this.name, this.amount);
   Account.initial(int id, String name) : this(id, name, 0.0);
+  Account._ofNull() : this(0, null, null);
   factory Account.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 3);
-    return Account(
-      map[table.params[0].name],
-      map[table.params[1].name],
-      map[table.params[2].name]
-    );
+    return Account(map[table.params[0].name], map[table.params[1].name],
+        map[table.params[2].name]);
   }
 
   Map<String, dynamic> toJson() => {
-    _table.params[0].name : id,
-    _table.params[1].name : name,
-    _table.params[2].name : amount
-  };
+        _table.params[0].name: id,
+        _table.params[1].name: name,
+        _table.params[2].name: amount
+      };
 
   static Future<List<Account>> get accounts async {
     final res = await (await dbProvider.db).query(table.tableName);
@@ -167,6 +161,8 @@ class Account with HasTable, Named {
         : [];
     return list;
   }
+
+  static Future<int> getNextId() => Account._ofNull().nextId();
 }
 
 class Transaction with HasTable {
@@ -184,7 +180,8 @@ class Transaction with HasTable {
   Table get _table => table;
 
   Transaction(this.id, this.amount, this.account, this.vendor, this.dt,
-      this.category, this.subcategory, [this.receipt, this.transferId]);
+      this.category, this.subcategory,
+      [this.receipt, this.transferId]);
   Transaction._ofNull() : this(0, null, null, null, null, null, null);
   Transaction.transferFrom(this.id, this.amount, this.account, Transaction t) {
     this.vendor = t.vendor;
@@ -198,36 +195,36 @@ class Transaction with HasTable {
   factory Transaction.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 9);
     return Transaction(
-      map[table.params[0].name],
-      map[table.params[1].name],
-      map[table.params[2].name],
-      map[table.params[3].name],
-      DateTime.parse(map[table.params[4].name]).toLocal(),
-      map[table.params[5].name],
-      map[table.params[6].name],
-      map[table.params[7].name],
-      map[table.params[8].name]
-    );
+        map[table.params[0].name],
+        map[table.params[1].name],
+        map[table.params[2].name],
+        map[table.params[3].name],
+        DateTime.parse(map[table.params[4].name]).toLocal(),
+        map[table.params[5].name],
+        map[table.params[6].name],
+        map[table.params[7].name],
+        map[table.params[8].name]);
   }
 
   static Future<int> getNextId() => Transaction._ofNull().nextId();
 
   Map<String, dynamic> toJson() => {
-    _table.params[0].name : id,
-    _table.params[1].name : amount,
-    _table.params[2].name : account,
-    _table.params[3].name : vendor,
-    _table.params[4].name : dt.toUtc().toIso8601String(),
-    _table.params[5].name : category,
-    _table.params[6].name : subcategory,
-    _table.params[7].name : receipt,
-    _table.params[8].name : transferId
-  };
+        _table.params[0].name: id,
+        _table.params[1].name: amount,
+        _table.params[2].name: account,
+        _table.params[3].name: vendor,
+        _table.params[4].name: dt.toUtc().toIso8601String(),
+        _table.params[5].name: category,
+        _table.params[6].name: subcategory,
+        _table.params[7].name: receipt,
+        _table.params[8].name: transferId
+      };
 
   static Future<List<Transaction>> get transactions async {
     final res = await (await dbProvider.db).query(table.tableName);
     List<Transaction> list = res.isNotEmpty
-        ? res.map((Map<String, dynamic> map) => Transaction.fromJson(map)).toList()
+        ? res.map((Map<String, dynamic> map) => Transaction.fromJson(map))
+             .toList()
         : [];
     return list;
   }
