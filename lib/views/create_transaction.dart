@@ -108,8 +108,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         },
         keyboardType: TextInputType.numberWithOptions(
             signed: false, decimal: true),
-        decoration: new InputDecoration(
-          icon: new Icon(Icons.attach_money),
+        decoration: const InputDecoration(
+          icon: const Icon(Icons.attach_money),
           hintText: 'Enter the Total',
         ),
       ),
@@ -124,8 +124,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             this._vendor = value;
           },
           keyboardType: TextInputType.text,
-          decoration: new InputDecoration(
-            icon: new Icon(Icons.business),
+          decoration: const InputDecoration(
+            icon: const Icon(Icons.business),
             hintText: "Enter the Vendor's Name",
           ),
         ),
@@ -148,8 +148,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                   this._fromAccount = account;
                 });
               },
-              decoration: new InputDecoration(
-                icon: Icon(Icons.account_balance_wallet),
+              decoration: const InputDecoration(
+                icon: const Icon(Icons.account_balance_wallet),
                 hintText: 'Account Withdrawn From',
               ),
             );
@@ -174,8 +174,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                     this._toAccount = account;
                   });
                 },
-                decoration: new InputDecoration(
-                  icon: Icon(Icons.account_balance_wallet),
+                decoration: const InputDecoration(
+                  icon: const Icon(Icons.account_balance_wallet),
                   hintText: 'Account Deposited To',
                 ),
               );
@@ -198,8 +198,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             validator: (_) {
               if (this._category == null) return 'Choose category!';
             },
-            decoration: new InputDecoration(
-              icon: new Icon(Icons.category),
+            decoration: const InputDecoration(
+              icon: const Icon(Icons.category),
               hintText: "Choose a Category",
             ),
           );
@@ -219,8 +219,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         validator: (_) {
           if (this._subcategory == null) return 'Choose category!';
         },
-        decoration: new InputDecoration(
-          icon: new Icon(Icons.category),
+        decoration: const InputDecoration(
+          icon: const Icon(Icons.category),
           hintText: "Choose a Subcategory",
         ),
       ),
