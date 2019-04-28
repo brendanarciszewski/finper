@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Fin(ancial) Per(sistence)'),
         actions: <Widget>[
           new IconButton(
-            icon: const Icon(Icons.list),
+            icon: const Icon(Icons.more_vert),
             onPressed: () {
               Navigator.push(
                 context,

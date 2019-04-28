@@ -118,13 +118,13 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
             final account = Account(_name, _amount*_sign);
             await account.addToDb();
-            Navigator.pop(context);
 
             Scaffold.of(context).hideCurrentSnackBar();
             Scaffold
                 .of(context)
                 .showSnackBar(
                 SnackBar(content: const Text('Saved Data')));
+            Navigator.pop(context);
           }
         },
         child: const Text('Add Account'),
