@@ -236,7 +236,8 @@ class Transaction with HasTable {
       };
 
   static Future<List<Transaction>> get transactions async {
-    final res = await (await dbProvider.db).query(table.tableName);
+    final res = await (await dbProvider.db).query(table.tableName,
+        orderBy: "${table.params[4].name} DESC");
     List<Transaction> list = res.isNotEmpty
         ? res.map((Map<String, dynamic> map) => Transaction.fromJson(map))
              .toList()
