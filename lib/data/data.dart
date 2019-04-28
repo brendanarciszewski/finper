@@ -19,7 +19,7 @@ mixin HasTable {
     return (curIdResp[0][colName] ?? 0) + 1;
   }
 
-  void addToDb() async {
+  Future<Null> addToDb() async {
     var newId = _table.newRowWith(await dbProvider.db, this.toJson());
     this._id = await newId;
   }
@@ -205,7 +205,6 @@ class Transaction with HasTable {
     this.subcategory = t.subcategory;
     this.receipt = t.receipt;
     this.transferId = t._id;
-    t.transferId = this._id; // Objects are passed by reference
   }
   factory Transaction.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 9);
@@ -234,6 +233,15 @@ class Transaction with HasTable {
         _table.params[7].name: /*json.encode(*/receipt/*)*/,
         _table.params[8].name: transferId
       };
+
+  static Future<List<Transaction>> withId(int id) async {
+    final res = await (await dbProvider.db).query(table.tableName,
+        where: '${Param.id().name} = ?',
+        whereArgs: [id],);
+    return res.isNotEmpty
+        ? res.map((Map<String, dynamic> map) => Transaction.fromJson(map))
+        : <Transaction>[];
+  }
 
   static Future<List<Transaction>> get transactions async {
     final res = await (await dbProvider.db).query(table.tableName,

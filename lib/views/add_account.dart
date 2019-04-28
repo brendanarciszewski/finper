@@ -108,7 +108,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
         ),
       ),
       new RaisedButton(
-        onPressed: () {
+        onPressed: () async {
           if (_formKey.currentState.validate()) {
             Scaffold
                 .of(context)
@@ -117,7 +117,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
             _formKey.currentState.save();
 
             final account = Account(_name, _amount*_sign);
-            account.addToDb();
+            await account.addToDb();
             Navigator.pop(context);
 
             Scaffold.of(context).hideCurrentSnackBar();

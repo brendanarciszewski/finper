@@ -24,9 +24,30 @@ class _TransactionsListState extends State<TransactionsList> {
       (BuildContext context, List<Transaction> transactions) {
         if (transactions.length == 0)
           return Center(child: Text('Create a Transaction'),);
+
+        var seenIds = <int>[];
         return new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
-            return new _TransactionItem(transactions[index]);
+            final temp = transactions[index];
+            if (seenIds.contains(temp.id))
+              return const SizedBox.shrink();
+
+            seenIds.add(temp.id);
+            if (temp.transferId != null) {
+              seenIds.add(temp.transferId);
+              Transaction from, to;
+              if (temp.amount.isNegative) {
+                from = temp;
+                to = transactions.singleWhere(
+                        (Transaction t) => t.transferId == temp.id);
+              } else {
+                to = temp;
+                from = transactions.singleWhere(
+                        (Transaction t) => t.transferId == temp.id);
+              }
+              return new _TransactionTransferItem(from, to);
+            }
+            return new _TransactionItem(temp);
           },
           itemCount: transactions.length,
         );
@@ -49,6 +70,27 @@ class _TransactionItem extends StatelessWidget {
         '${_transaction.category}->${_transaction.subcategory}\n'
         '${dF.format(_transaction.dt)}\n'
         '${_transaction.account}'
+      ),
+      padding: const EdgeInsets.all(8.0),
+      alignment: Alignment.centerLeft,
+    );
+  }
+}
+
+class _TransactionTransferItem extends StatelessWidget {
+  final Transaction _transactionFrom, _transactionTo;
+  _TransactionTransferItem(this._transactionFrom, this._transactionTo);
+
+  @override
+  Widget build(BuildContext context) {
+    final nF = new NumberFormat.currency(symbol: '\$',);
+    final dF = new DateFormat("yyyy-MM-dd '@' HH:mm");
+    return new Container(
+      child: new Text(
+        '${_transactionFrom.account}->${_transactionTo.account}: '
+            '${nF.format(_transactionTo.amount)}\n'
+        '${_transactionFrom.category}->${_transactionFrom.subcategory}\n'
+        '${dF.format(_transactionFrom.dt)}'
       ),
       padding: const EdgeInsets.all(8.0),
       alignment: Alignment.centerLeft,

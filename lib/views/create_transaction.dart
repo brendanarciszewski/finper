@@ -281,20 +281,21 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             if (_sign == 0.0) {
               //Is a transfer
               transaction1.vendor = 'Transfer';
-              transaction1.addToDb();
+              await transaction1.addToDb();
               _fromAccount.amount -= _amount;
               await _fromAccount.updateInDb();
 
               final transaction2 = Transaction.transferFrom(_amount,
                   _toAccount.name, transaction1);
-              transaction2.addToDb();
+              await transaction2.addToDb();
+              transaction1.transferId = transaction2.id;
               await transaction1.updateInDb();
               _toAccount.amount += _amount;
               await _toAccount.updateInDb();
 
             } else if (_sign < 0.0) {
               //Is a withdrawal
-              transaction1.addToDb();
+              await transaction1.addToDb();
               _fromAccount.amount -= _amount;
               await _fromAccount.updateInDb();
 
@@ -302,7 +303,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
               //Is a deposit
               transaction1.amount = _amount;
               transaction1.account = _toAccount.name;
-              transaction1.addToDb();
+              await transaction1.addToDb();
               _toAccount.amount += _amount;
               await _toAccount.updateInDb();
             }
