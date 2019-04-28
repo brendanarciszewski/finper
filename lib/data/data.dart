@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'db.dart';
 
 mixin Named {
@@ -9,6 +8,7 @@ mixin Named {
 mixin HasTable {
   Table get _table;
   int get id;
+  set _id(int newId);
   Map<String, dynamic> toJson();
 
   Future<int> nextId() async {
@@ -19,8 +19,9 @@ mixin HasTable {
     return (curIdResp[0][colName] ?? 0) + 1;
   }
 
-  Future<int> addToDb() async {
-    return _table.newRowWith(await dbProvider.db, this.toJson());
+  void addToDb() async {
+    var newId = _table.newRowWith(await dbProvider.db, this.toJson());
+    this._id = await newId;
   }
 
   Future<int> rmFromDb() async {
@@ -37,7 +38,8 @@ mixin HasTable {
 }
 
 class Category with HasTable, Named {
-  final int id;
+  int _id;
+  int get id => _id;
   final String name;
 
   List<Category> subcategories;
@@ -45,26 +47,30 @@ class Category with HasTable, Named {
 
   Table get _table => table;
 
-  Category(this.id, this.name, this.subcategories);
-  Category.subcategory(String name) : this(null, name, []);
-  Category.fromStr(this.id, this.name, List<String> subcategories) {
+  Category(String name, List<String> subcategories) :
+        this._(null, name, subcategories);
+  Category.subcategory(String name) : this(name, []);
+  Category._(this._id, this.name, List<String> subcategories) {
     this.subcategories =
         subcategories.map((String s) => new Category.subcategory(s)).toList();
   }
+  Category._ofNull() : this._(0, null, null);
   factory Category.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 3);
-    return Category.fromStr(
+    return Category._(
         map[table.params[0].name],
         map[table.params[1].name],
         List<String>.from(jsonDecode(map[table.params[2].name])));
   }
 
   Map<String, dynamic> toJson() => {
-        _table.params[0].name: id,
+        _table.params[0].name: _id,
         _table.params[1].name: name,
         _table.params[2].name:
             jsonEncode(subcategories.map((Category c) => c.name).toList())
       };
+
+  static Future<int> getNextId() => Category._ofNull().nextId();
 
   static Future<List<Category>> get categories async {
     final res = await (await dbProvider.db).query(table.tableName);
@@ -75,7 +81,7 @@ class Category with HasTable, Named {
   }
 
   static final defaultCategories = [
-    new Category.fromStr(1, 'Employment/Education', [
+    new Category('Employment/Education', [
       'Regular Income',
       'Occasional Income',
       'Grant/Bursary',
@@ -84,7 +90,7 @@ class Category with HasTable, Named {
       'Expense',
       'Other'
     ]),
-    new Category.fromStr(2, 'Meals', [
+    new Category('Meals', [
       'Groceries',
       'Fast Food/Convenience',
       'Restaurant',
@@ -92,18 +98,18 @@ class Category with HasTable, Named {
       'Subscriptions',
       'Other'
     ]),
-    new Category.fromStr(3, 'Health/Personal Care',
+    new Category('Health/Personal Care',
         ['Fitness/Sports', 'Insurance/Doctor/Pharmacy', 'Other']),
-    new Category.fromStr(4, 'Banking/Investment',
+    new Category('Banking/Investment',
         ['Fees', 'Loans', 'Portfolio/Passive Income', 'Other']),
-    new Category.fromStr(5, 'Transportation', [
-      'Transportation Cost (Gas/Tolls/Public Transit)',
+    new Category('Transportation', [
+      'Transit Cost (Gas/Tolls/Public Transit)',
       'Parking',
       'Maintenance',
       'Other'
     ]),
-    new Category.fromStr(6, 'Pets', ['Meals', 'Health/Care', 'Other']),
-    new Category.fromStr(7, 'Shopping', [
+    new Category('Pets', ['Meals', 'Health/Care', 'Other']),
+    new Category('Shopping', [
       'Clothing',
       'Electronics',
       'Sporting Goods',
@@ -112,44 +118,50 @@ class Category with HasTable, Named {
       'Travel',
       'Other'
     ]),
-    new Category.fromStr(8, 'Entertainment', [
+    new Category('Entertainment', [
       'Theatre/Cinema/Concert',
       'Physical/Digital Media',
       'Sports',
       'Subscriptions',
       'Other'
     ]),
-    new Category.fromStr(9, 'Other Bills', [
+    new Category('Other Bills', [
       'Phone/Internet',
       'Insurance',
       'Electricity/Gas/Water',
       'Rent/Mortgage/Property Tax',
       'Legal',
       'Charity',
+      'Credit',
+      'Transfer',
       'Other'
     ]),
   ];
 }
 
 class Account with HasTable, Named {
-  final int id;
+  int _id;
+  int get id => _id;
   String name;
   double amount;
   static final table = accountsV1;
 
   Table get _table => table;
 
-  Account(this.id, this.name, this.amount);
-  Account.initial(int id, String name) : this(id, name, 0.0);
-  Account._ofNull() : this(0, null, null);
+  Account._(this._id, this.name, this.amount);
+  Account(String name, double amount) : this._(null, name, amount);
+  Account._ofNull() : this._(0, null, null);
   factory Account.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 3);
-    return Account(map[table.params[0].name], map[table.params[1].name],
-        map[table.params[2].name]);
+    return Account._(
+        map[table.params[0].name],
+        map[table.params[1].name],
+        map[table.params[2].name]
+    );
   }
 
   Map<String, dynamic> toJson() => {
-        _table.params[0].name: id,
+        _table.params[0].name: _id,
         _table.params[1].name: name,
         _table.params[2].name: amount
       };
@@ -166,35 +178,38 @@ class Account with HasTable, Named {
 }
 
 class Transaction with HasTable {
-  final int id;
+  int get id => _id;
+  int _id;
   double amount;
   String account;
   String vendor;
   DateTime dt;
   String category;
   String subcategory;
-  Object receipt;
+  /*List<int>*/ Object receipt;
   int transferId;
   static final table = transactionsV1;
 
   Table get _table => table;
 
-  Transaction(this.id, this.amount, this.account, this.vendor, this.dt,
-      this.category, this.subcategory,
-      [this.receipt, this.transferId]);
-  Transaction._ofNull() : this(0, null, null, null, null, null, null);
-  Transaction.transferFrom(this.id, this.amount, this.account, Transaction t) {
+  Transaction._(this._id, this.amount, this.account, this.vendor, this.dt,
+      this.category, this.subcategory, [this.receipt, this.transferId]);
+  Transaction(this.amount, this.account, this.vendor, this.dt,
+      this.category, this.subcategory, [this.receipt, this.transferId]);
+  Transaction._ofNull() : this._(0, null, null, null, null, null, null);
+  Transaction.transferFrom(this.amount, this.account, Transaction t) {
+    this._id = null;
     this.vendor = t.vendor;
     this.dt = t.dt;
     this.category = t.category;
     this.subcategory = t.subcategory;
     this.receipt = t.receipt;
-    this.transferId = t.id;
-    t.transferId = this.id; // Objects are passed by reference
+    this.transferId = t._id;
+    t.transferId = this._id; // Objects are passed by reference
   }
   factory Transaction.fromJson(Map<String, dynamic> map) {
     assert(table.params.length == 9);
-    return Transaction(
+    return Transaction._(
         map[table.params[0].name],
         map[table.params[1].name],
         map[table.params[2].name],
@@ -202,7 +217,7 @@ class Transaction with HasTable {
         DateTime.parse(map[table.params[4].name]).toLocal(),
         map[table.params[5].name],
         map[table.params[6].name],
-        map[table.params[7].name],
+        /*json.decode(*/map[table.params[7].name]/*)*/,
         map[table.params[8].name]);
   }
 
@@ -216,7 +231,7 @@ class Transaction with HasTable {
         _table.params[4].name: dt.toUtc().toIso8601String(),
         _table.params[5].name: category,
         _table.params[6].name: subcategory,
-        _table.params[7].name: receipt,
+        _table.params[7].name: /*json.encode(*/receipt/*)*/,
         _table.params[8].name: transferId
       };
 

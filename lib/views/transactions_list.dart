@@ -45,9 +45,10 @@ class _TransactionItem extends StatelessWidget {
     final dF = new DateFormat("yyyy-MM-dd '@' HH:mm");
     return new Container(
       child: new Text(
-        '${nF.format(_transaction.amount)}: ${_transaction.vendor}\n'
+        '${_transaction.vendor}: ${nF.format(_transaction.amount)}\n'
         '${_transaction.category}->${_transaction.subcategory}\n'
-        '${dF.format(_transaction.dt)}'
+        '${dF.format(_transaction.dt)}\n'
+        '${_transaction.account}'
       ),
       padding: const EdgeInsets.all(8.0),
       alignment: Alignment.centerLeft,

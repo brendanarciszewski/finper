@@ -47,6 +47,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
 
   List<Widget> _visibleWidgets() {
     return <Widget>[
+      //Expense, Transfer, or Income
       new Row(
           children: <Widget>[
             const Spacer(),
@@ -96,6 +97,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             const Spacer(),
           ]
       ),
+      //Amount
       new TextFormField(
         validator: (String value) {
           if (value.isEmpty) return 'Enter cost!';
@@ -111,19 +113,24 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           hintText: 'Enter the Total',
         ),
       ),
-      new TextFormField(
-        validator: (String value) {
-          if (value.isEmpty) return 'Enter vendor!';
-        },
-        onSaved: (String value) {
-          this._vendor = value;
-        },
-        keyboardType: TextInputType.text,
-        decoration: new InputDecoration(
-          icon: new Icon(Icons.business),
-          hintText: "Enter the Vendor's Name",
+      //Vendor
+      new Visibility(
+        visible: this._sign != 0.0,
+        child: new TextFormField(
+          validator: (String value) {
+            if (value.isEmpty && this._sign != 0.0) return 'Enter vendor!';
+          },
+          onSaved: (String value) {
+            this._vendor = value;
+          },
+          keyboardType: TextInputType.text,
+          decoration: new InputDecoration(
+            icon: new Icon(Icons.business),
+            hintText: "Enter the Vendor's Name",
+          ),
         ),
       ),
+      //From_Account
       new Visibility(
         visible: this._sign <= 0.0,
         child: new DefaultFutureBuilder<List<Account>>(
@@ -149,6 +156,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           }
         ),
       ),
+      //To_Account
       new Visibility(
         visible: this._sign >= 0.0,
         child: new DefaultFutureBuilder<List<Account>>(
@@ -174,6 +182,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             }
         ),
       ),
+      //Categories
       new DefaultFutureBuilder<List<Category>>(
         this._categoriesFuture,
         (BuildContext context, List<Category> categories) {
@@ -196,6 +205,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           );
         }
       ),
+      //Subcategories
       new DropdownButtonFormField<Category>(
         items: listToDropdownList<Category>(this._category != null
             ? this._category.subcategories
@@ -214,6 +224,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           hintText: "Choose a Subcategory",
         ),
       ),
+      //Date picker
       new Row(
         children: <Widget>[
           const Icon(Icons.date_range),
@@ -254,6 +265,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           const Spacer(flex: 2),
         ],
       ),
+      //Submit btn
       new RaisedButton(
         onPressed: () async {
           if (_formKey.currentState.validate()) {
@@ -263,36 +275,34 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                 const SnackBar(content: const Text('Processing Data')));
             _formKey.currentState.save();
 
-            final id1 = await Transaction.getNextId();
-            var transaction1 = Transaction(id1, null, null, _vendor,
-                _dateTime, _category.name, _subcategory.name);
+            var transaction1 = Transaction(-_amount, _fromAccount.name,
+                _vendor, _dateTime, _category.name, _subcategory.name);
+            // `amount` and `account` will be set in the `if`s
             if (_sign == 0.0) {
               //Is a transfer
-              transaction1.amount = -_amount;
-              transaction1.account = _fromAccount.name;
-              await transaction1.addToDb();
+              transaction1.vendor = 'Transfer';
+              transaction1.addToDb();
               _fromAccount.amount -= _amount;
               await _fromAccount.updateInDb();
 
-              final id2 = await Transaction.getNextId();
-              final transaction2 = Transaction.transferFrom(id2, _amount,
+              final transaction2 = Transaction.transferFrom(_amount,
                   _toAccount.name, transaction1);
-              await transaction2.addToDb();
+              transaction2.addToDb();
               await transaction1.updateInDb();
               _toAccount.amount += _amount;
               await _toAccount.updateInDb();
+
             } else if (_sign < 0.0) {
-              //Is a withdrawl
-              transaction1.amount = -_amount;
-              transaction1.account = _fromAccount.name;
-              await transaction1.addToDb();
+              //Is a withdrawal
+              transaction1.addToDb();
               _fromAccount.amount -= _amount;
               await _fromAccount.updateInDb();
+
             } else if (_sign > 0.0) {
               //Is a deposit
               transaction1.amount = _amount;
               transaction1.account = _toAccount.name;
-              await transaction1.addToDb();
+              transaction1.addToDb();
               _toAccount.amount += _amount;
               await _toAccount.updateInDb();
             }
@@ -307,9 +317,13 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           }
         },
         child: new Text(
-            'Submit ${_sign < 0.0
-                ? 'Withdrawl'
-                : (_sign > 0.0 ? 'Deposit' : 'Transfer')}'
+          'Submit ${
+            _sign < 0.0
+            ? 'Withdrawal'
+            : (_sign > 0.0
+                ? 'Deposit'
+                : 'Transfer')
+          }'
         ),
       ),
     ];

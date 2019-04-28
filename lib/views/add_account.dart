@@ -110,21 +110,24 @@ class _AddAccountFormState extends State<AddAccountForm> {
       new RaisedButton(
         onPressed: () {
           if (_formKey.currentState.validate()) {
-            _formKey.currentState.save();
-
-            Account.getNextId().then((int id) async {
-              final account = Account(id, _name, _amount*_sign);
-              await account.addToDb();
-              Navigator.pop(context);
-            });
-
             Scaffold
                 .of(context)
                 .showSnackBar(
-                SnackBar(content: Text('Processing Data')));
+                SnackBar(content: const Text('Processing Data')));
+            _formKey.currentState.save();
+
+            final account = Account(_name, _amount*_sign);
+            account.addToDb();
+            Navigator.pop(context);
+
+            Scaffold.of(context).hideCurrentSnackBar();
+            Scaffold
+                .of(context)
+                .showSnackBar(
+                SnackBar(content: const Text('Saved Data')));
           }
         },
-        child: new Text('Add Account'),
+        child: const Text('Add Account'),
       ),
     ];
   }

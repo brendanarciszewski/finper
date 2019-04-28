@@ -69,7 +69,7 @@ class _AccountsTable with Table {
   _AccountsTable.v1() : tableName = 'Accounts_v1',
         params = [
           Param.id(),
-          Param('name', SQLTypes.TEXT),
+          Param('name', SQLTypes.TEXT, isUnique: true),
           Param('amount', SQLTypes.REAL),
         ];
   final tableName;
@@ -80,7 +80,7 @@ class _CategoriesTable with Table {
   _CategoriesTable.v1() : tableName = 'Categories_v1',
         params = [
           Param.id(),
-          Param('category', SQLTypes.TEXT),
+          Param('category', SQLTypes.TEXT, isUnique: true),
           Param('subcategories', SQLTypes.TEXT)
         ];
   final tableName;
@@ -108,9 +108,11 @@ class Param {
   final String name;
   final bool isNullable;
   final bool isPrimary;
+  final bool isUnique;
   final SQLTypes type;
 
-  Param(this.name, this.type, {this.isNullable=false, this.isPrimary=false});
+  Param(this.name, this.type, {this.isNullable=false, this.isPrimary=false,
+    this.isUnique=false});
   Param.id() : this('id', SQLTypes.INTEGER, isPrimary: true);
 
   String get typeAsStr {
@@ -123,17 +125,13 @@ class Param {
     return null; // Not possible to reach, but suppresses warning
   }
 
-  String get notNullStr {
-    return isNullable ? '' : 'NOT NULL';
-  }
+  String get notNullStr => isNullable ? '' : 'NOT NULL';
 
-  String get primaryStr {
-    return isPrimary ? 'PRIMARY KEY' : '';
-  }
+  String get primaryStr => isPrimary ? 'PRIMARY KEY' : '';
 
-  String asStr() {
-    return '$name $typeAsStr $primaryStr $notNullStr';
-  }
+  String get uniqueStr => isUnique ? 'UNIQUE' : '';
+
+  String asStr() => '$name $typeAsStr $primaryStr $uniqueStr $notNullStr';
 }
 
 enum SQLTypes {
