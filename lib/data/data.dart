@@ -85,7 +85,7 @@ class Category with HasTable, Named {
       'Regular Income',
       'Occasional Income',
       'Grant/Bursary',
-      'Social Services/Tax Payment/Refund',
+      'Tax Payment/Refund',
       'Tuition/Books',
       'Expense',
       'Other'
@@ -103,8 +103,11 @@ class Category with HasTable, Named {
     new Category('Banking/Investment',
         ['Fees', 'Loans', 'Portfolio/Passive Income', 'Other']),
     new Category('Transportation', [
-      'Transit Cost (Gas/Tolls/Public Transit)',
+      'Public Transit',
+      'Gas',
+      'Tolls',
       'Parking',
+      'Insurance',
       'Maintenance',
       'Other'
     ]),
@@ -125,11 +128,14 @@ class Category with HasTable, Named {
       'Subscriptions',
       'Other'
     ]),
-    new Category('Other Bills', [
+    new Category('Home', [
       'Phone/Internet',
       'Insurance',
       'Electricity/Gas/Water',
       'Rent/Mortgage/Property Tax',
+      'Other'
+    ]),
+    new Category('Other', [
       'Legal',
       'Charity',
       'Credit',
