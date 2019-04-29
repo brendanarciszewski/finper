@@ -11,12 +11,15 @@ class CreateTransactionForm extends StatefulWidget {
 
 class _CreateTransactionFormState extends State<CreateTransactionForm> {
   final _formKey = new GlobalKey<FormState>();
+  var _timeCon = new TextEditingController(text: "");
+  var _dateCon = new TextEditingController(text: "");
 
   Category _category;
   Category _subcategory;
   Account _fromAccount;
   Account _toAccount;
-  DateTime _dateTime;
+  DateTime _date;
+  TimeOfDay _time;
   double _amount;
   double _sign = 0.0;
   String _vendor;
@@ -227,42 +230,82 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
       //Date picker
       new Row(
         children: <Widget>[
-          const Icon(Icons.date_range),
-          const Spacer(flex: 7,),
-          new Expanded(
-            child: new Text('${this._dateTime != null
-                ? new DateFormat("yyyy-MM-dd '@' HH:mm")
-                .format(this._dateTime)
-                : ''}'),
-            flex: 91,
-          ),
-          new FormField<RaisedButton>(
-            builder: (FormFieldState<RaisedButton> field) {
-              return new RaisedButton(
-                child: const Text('Pick Date'),
-                onPressed: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime(1970),
-                    initialDate: DateTime.now(),
-                    lastDate: DateTime.now().add(Duration(days: 367)),
-                  );
-                  final time = await showTimePicker(
+          new Flexible(
+            flex: 55,
+            child: new FormField<TextField>(
+              //key: ,
+              builder: (FormFieldState<TextField> field) {
+                return new TextField(
+                  controller: this._dateCon,
+                  decoration: const InputDecoration(
+                    hintText: 'Choose Date',
+                    icon: Icon(Icons.date_range),
+                  ),
+                  onTap: () async {
+                    final date = await showDatePicker(
                       context: context,
-                      initialTime: TimeOfDay.now()
-                  );
-                  setState(() {
-                    this._dateTime = DateTime(date.year, date.month,
-                        date.day, time.hour, time.minute);
-                  });
-                },
-              );
-            }, // TODO add validation (by intercepting clicks on a TextField
-            /*validator: (_) {
-              if (this._dateTime == null) return 'Pick Date & Time!';
-            },*/
+                      firstDate: new DateTime(1970),
+                      initialDate: new DateTime.now(),
+                      lastDate: new DateTime.now().add(Duration(days: 367)),
+                    );
+                    setState(() {
+                      try {
+                        this._date = DateTime(date.year, date.month, date.day);
+                      } catch (_) {
+                        this._date = null;
+                      }
+                    });
+                    final dF = new DateFormat("yyyy-MM-dd");
+                    try {
+                      this._dateCon.text = dF.format(_date);
+                    } catch (_) {
+                      this._dateCon.text = "";
+                    }
+                  },
+                );
+              },
+              validator: (_) {
+                if (this._date == null) return 'Pick Date!';
+                return null;
+              }, // TODO make this output the subscript
+            ),
           ),
-          const Spacer(flex: 2),
+          new Flexible(
+            flex: 45,
+            child: new FormField<TextField>(
+              //key: ,
+              builder: (FormFieldState<TextField> field) {
+                return new TextField(
+                  controller: this._timeCon,
+                  decoration: new InputDecoration(
+                    hintText: 'Choose Time',
+                    icon: Icon(Icons.access_time),
+                  ),
+                  onTap: () async {
+                    var time = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    setState(() {
+                      this._time = time;
+                    });
+                    final p = new NumberFormat("00");
+                    try {
+                      this._timeCon.text = '${p.format(this._time.hour)}:'
+                          '${p.format(this._time.minute)}';
+                    } catch (_) {
+                      this._timeCon.text = "";
+                      this._time = null;
+                    }
+                  },
+                );
+              },
+              validator: (_) {
+                if (this._time == null) return 'Pick Time!';
+                return null;
+              }, // TODO make this output the subscript
+            ),
+          ),
         ],
       ),
       //Submit btn
@@ -275,11 +318,14 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                 const SnackBar(content: const Text('Processing Data')));
             _formKey.currentState.save();
 
-            var transaction1 = Transaction(-_amount, _fromAccount.name,
-                _vendor, _dateTime, _category.name, _subcategory.name);
+            final dateTime = DateTime(_date.year, _date.month, _date.day,
+                _time.hour, _time.minute);
+            var transaction1 = Transaction(-_amount, null,
+                _vendor, dateTime, _category.name, _subcategory.name);
             // `amount` and `account` will be set in the `if`s
             if (_sign == 0.0) {
               //Is a transfer
+              transaction1.account = _fromAccount.name;
               transaction1.vendor = 'Transfer';
               await transaction1.addToDb();
               _fromAccount.amount -= _amount;
@@ -295,13 +341,14 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
 
             } else if (_sign < 0.0) {
               //Is a withdrawal
+              transaction1.account = _fromAccount.name;
               await transaction1.addToDb();
               _fromAccount.amount -= _amount;
               await _fromAccount.updateInDb();
 
             } else if (_sign > 0.0) {
               //Is a deposit
-              transaction1.amount = _amount;
+              transaction1.amount *= -1.0;
               transaction1.account = _toAccount.name;
               await transaction1.addToDb();
               _toAccount.amount += _amount;
@@ -315,6 +362,13 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                 .of(context)
                 .showSnackBar(
                  const SnackBar(content: const Text('Saved Data')));
+          } else {
+            if (_date == null) {
+              _dateCon.text += '!';
+            }
+            if (_time == null) {
+              _timeCon.text += '!';
+            }
           }
         },
         child: new Text(
@@ -337,7 +391,10 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
       _subcategory = null;
       _fromAccount = null;
       _toAccount = null;
-      _dateTime = null;
+      _date = null;
+      _dateCon.text = "";
+      _time = null;
+      _timeCon.text = '';
       _amount = null;
       _vendor = null;
     });
