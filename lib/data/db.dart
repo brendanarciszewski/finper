@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart' as f;
+import 'package:csv/csv.dart' as c;
 import 'data.dart';
 
 final dbProvider = new _DBProvider();
@@ -62,6 +63,17 @@ mixin Table {
 
   Future<int> newRowWith(Database db, Map<String, dynamic> serializedObj) {
     return db.insert(tableName, serializedObj);
+  }
+
+  Future<String> export() async {
+    final db = await dbProvider.db;
+    final query = await db.query(tableName);
+    List<List<dynamic>> list = [];
+    list.add(params.map((Param p) => p.name).toList());
+    list.addAll(query.map((Map<String, dynamic> map) {
+      return map.values.toList();
+    }));
+    return c.ListToCsvConverter().convert(list);
   }
 }
 
