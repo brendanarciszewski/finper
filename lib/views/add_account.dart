@@ -117,7 +117,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
             _formKey.currentState.save();
 
             final account = Account(_name, _amount*_sign);
+            final transaction = Transaction(account.amount, account.name,
+                'Initial Balance', DateTime.now(), 'Other', 'Other');
             await account.addToDb();
+            await transaction.addToDb();
 
             Scaffold.of(context).hideCurrentSnackBar();
             Scaffold
