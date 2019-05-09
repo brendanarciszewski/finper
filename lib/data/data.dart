@@ -228,6 +228,9 @@ class Transaction with HasTable {
 
   static Future<int> getNextId() => Transaction._ofNull().nextId();
 
+  bool isExpense() => amount < 0;
+  bool isIncome() => amount > 0;
+
   Map<String, dynamic> toJson() => {
         _table.params[0].name: id,
         _table.params[1].name: amount,

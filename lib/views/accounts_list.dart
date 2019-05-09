@@ -42,10 +42,9 @@ class _AccountItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final f = new NumberFormat.currency(symbol: '\$',);
-    return new Container(
-      child: new Text('${_account.name}: ${f.format(_account.amount)}'),
-      padding: const EdgeInsets.all(8.0),
-      alignment: Alignment.centerLeft,
+    return new ListTile(
+      title: new Text('${_account.name}'),
+      trailing: new Text('${f.format(_account.amount)}'),
     );
   }
 }

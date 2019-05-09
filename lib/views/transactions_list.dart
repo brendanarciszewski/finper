@@ -64,15 +64,15 @@ class _TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final nF = new NumberFormat.currency(symbol: '\$',);
     final dF = new DateFormat("yyyy-MM-dd '@' HH:mm");
-    return new Container(
-      child: new Text(
-        '${_transaction.vendor}: ${nF.format(_transaction.amount)}\n'
-        '${_transaction.category}->${_transaction.subcategory}\n'
+    final dir = _transaction.isExpense() ? '<-' : '->';
+    return new ListTile(
+      isThreeLine: true,
+      trailing: new Text('${nF.format(_transaction.amount)}'),
+      title: new Text('${_transaction.vendor}$dir${_transaction.account}'),
+      subtitle: new Text(
         '${dF.format(_transaction.dt)}\n'
-        '${_transaction.account}'
+        '${_transaction.category}->${_transaction.subcategory}'
       ),
-      padding: const EdgeInsets.all(8.0),
-      alignment: Alignment.centerLeft,
     );
   }
 }
@@ -85,15 +85,17 @@ class _TransactionTransferItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final nF = new NumberFormat.currency(symbol: '\$',);
     final dF = new DateFormat("yyyy-MM-dd '@' HH:mm");
-    return new Container(
-      child: new Text(
-        '${_transactionFrom.account}->${_transactionTo.account}: '
-            '${nF.format(_transactionTo.amount)}\n'
-        '${_transactionFrom.category}->${_transactionFrom.subcategory}\n'
-        '${dF.format(_transactionFrom.dt)}'
+    return new ListTileTheme(
+      child: new ListTile(
+        isThreeLine: true,
+        trailing: new Text('${nF.format(_transactionTo.amount)}'),
+        title: new Text('Transfer: ${_transactionFrom.account}->${_transactionTo.account}'),
+        subtitle: new Text(
+          '${dF.format(_transactionFrom.dt)}\n'
+          '${_transactionFrom.category}->${_transactionFrom.subcategory}'
+        ),
       ),
-      padding: const EdgeInsets.all(8.0),
-      alignment: Alignment.centerLeft,
+      textColor: Colors.grey,
     );
   }
 }
