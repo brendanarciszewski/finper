@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../data/data.dart';
-import 'package:finper/widgets/default_future_builder.dart';
+import 'package:finper/data/data.dart';
+import 'package:finper/generic_widgets/default_future_builder.dart';
 
 class AccountsList extends StatefulWidget {
   @override
