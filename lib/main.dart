@@ -101,6 +101,46 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pop(context);
               },
             ),
+            new ListTile(
+              title: const Text('Open Source Software Licenses'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    new MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return new Scaffold(
+                            appBar: new AppBar(
+                              title: const Text('Licenses'),
+                            ),
+                            body: new ListView(
+                              children: <Widget>[
+                                const Text("""
+                                  sqflite
+                                """),
+                                const Text("""
+                                  path_provider
+                                """),
+                                const Text("""
+                                  path
+                                """),
+                                const Text("""
+                                  csv
+                                """),
+                                const Text("""
+                                  esys_flutter_share
+                                """),
+                                const Text("""
+                                  file_picker
+                                """),
+                              ],
+                            ),
+                          );
+                        }
+                    )
+                );
+              },
+            ),
           ],
         ),
       ),
