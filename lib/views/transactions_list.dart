@@ -23,11 +23,13 @@ class _TransactionsListState extends State<TransactionsList> {
       this._transactionsFuture,
       (BuildContext context, List<Transaction> transactions) {
         if (transactions.length == 0)
-          return Center(child: Text('Create a Transaction'),);
+          return const Center(child: Text('Create a Transaction'),);
 
         var seenIds = <int>[];
         return new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
+            if (index >= transactions.length)
+              return const ListTile();
             final temp = transactions[index];
             if (seenIds.contains(temp.id))
               return const SizedBox.shrink();

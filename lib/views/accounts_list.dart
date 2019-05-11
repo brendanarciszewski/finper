@@ -23,12 +23,14 @@ class _AccountsListState extends State<AccountsList> {
       this._accountsFuture,
       (BuildContext context, List<Account> accounts) {
         if (accounts.length == 0)
-          return Center(child: Text('Create an Account'),);
+          return const Center(child: Text('Create an Account'),);
         return new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
+            if (index >= accounts.length)
+              return const ListTile();
             return new _AccountItem(accounts[index]);
           },
-          itemCount: accounts.length,
+          itemCount: accounts.length + 1,
         );
       }
     );

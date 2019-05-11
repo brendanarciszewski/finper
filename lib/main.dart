@@ -27,19 +27,39 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   var _currentIndex = 0;
-  final _children = <Widget>[
-    new CreateTransactionForm(),
-    new TransactionsList(),
-    new AccountsList(),
-  ];
 
   @override
   Widget build(BuildContext context) {
+    final _children = <List<Widget>>[
+      [new CreateTransactionForm(), null],
+      [new TransactionsList(), null],
+      [new AccountsList(), FloatingActionButton(
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.orangeAccent,
+        onPressed: () {
+          Navigator.push(
+            context,
+            new MaterialPageRoute(
+              builder: (BuildContext context) {
+                return new Scaffold(
+                  appBar: new AppBar(
+                    title: const Text('Create an Account'),
+                  ),
+                  body: new AddAccountForm(),
+                );
+              }
+            )
+          );
+        },
+      )],
+    ];
+
     return new Scaffold(
       appBar: new AppBar(
         title: const Text('Fin(ancial) Per(sistence)'),
       ),
-      body: _children[_currentIndex],
+      body: _children[_currentIndex][0],
+      floatingActionButton: _children[_currentIndex][1],
       bottomNavigationBar: new BottomNavigationBar(
         onTap: onTabTapped,
         currentIndex: _currentIndex,
@@ -69,29 +89,16 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             new ListTile(
-              title: const Text('Add Account'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  new MaterialPageRoute(
-                    builder: (BuildContext context) {
-                      return new Scaffold(
-                        appBar: new AppBar(
-                          title: const Text('Create an Account'),
-                        ),
-                        body: new AddAccountForm(),
-                      );
-                    }
-                  )
-                );
-              },
-            ),
-            new ListTile(
               title: const Text('Export Data'),
               onTap: () {
                 Navigator.pop(context);
                 shareDatabase();
+              },
+            ),
+            new ListTile(
+              title: const Text('Import Data'),
+              onTap: () {
+                Navigator.pop(context);
               },
             ),
           ],
