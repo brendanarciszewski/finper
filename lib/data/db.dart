@@ -3,6 +3,8 @@ import 'package:path_provider/path_provider.dart' as pp;
 import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart' as f;
 import 'package:csv/csv.dart' as c;
+import 'dart:io';
+import 'dart:convert';
 import 'data.dart';
 
 final dbProvider = new _DBProvider();
@@ -34,12 +36,7 @@ class _DBProvider {
       //onConfigure: (Database db) async {},
       onCreate: (Database db, int version) async {
         for (var table in tables) {
-          final query = "CREATE TABLE ${table.tableName} ("
-              "${table.paramsAsStr()}"
-              ")";
-          // TODO remove print
-          f.debugPrint(query);
-          await db.execute(query);
+          await db.execute(table.sqlCreateStr());
         }
 
         for (var category in Category.defaultCategories) {
@@ -61,7 +58,9 @@ mixin Table {
     return params.map((Param p) => p.asStr()).join(',');
   }
 
-  Future<int> newRowWith(Database db, Map<String, dynamic> serializedObj) {
+  String sqlCreateStr() => "CREATE TABLE $tableName (${paramsAsStr()});";
+
+  Future<int> newRowWith(DatabaseExecutor db, Map<String, dynamic> serializedObj) {
     return db.insert(tableName, serializedObj);
   }
 
@@ -74,6 +73,29 @@ mixin Table {
       return map.values.toList();
     }));
     return c.ListToCsvConverter().convert(list);
+  }
+
+  Future<void> import(String csvPath, [void callback(List<dynamic> l)]) async {
+    final db = await dbProvider.db;
+    await db.transaction((txn) async {
+      await txn.execute("DROP TABLE IF EXISTS $tableName;");
+      await txn.execute(sqlCreateStr());
+      final fileStream = new File(csvPath).openRead();
+      List<List<dynamic>> csv = await fileStream.transform(utf8.decoder)
+          .transform(c.CsvToListConverter()).toList();
+
+      for (List<dynamic> row in csv.skip(1)) {
+        if (callback != null) callback(row);
+        final query = "INSERT INTO $tableName VALUES(${row.map((i) {
+          if (i == "null")
+            return null;
+          else if (i.runtimeType == String)
+            return '"$i"';
+          return i;
+        }).join(',')});";
+        await txn.execute(query);
+      }
+    });
   }
 }
 

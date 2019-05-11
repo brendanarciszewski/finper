@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:file_picker/file_picker.dart';
 import 'db.dart';
+
+final disallowedStrs = ["null"];
 
 mixin Named {
   String get name;
@@ -16,7 +19,6 @@ mixin HasTable {
     var db = await dbProvider.db;
     final colName = 'MAX(${Param.id().name})';
     final curIdResp = await db.query(_table.tableName, columns: [colName]);
-    print(curIdResp); // TODO remove print
     return (curIdResp[0][colName] ?? 0) + 1;
   }
 
@@ -40,6 +42,28 @@ mixin HasTable {
   Future<void> shareData() async {
     String csv = await _table.export();
     await Share.file(_table.tableName, '${_table.tableName}.csv', utf8.encode(csv), 'text/csv');
+  }
+
+  Future<void> importData() async {
+    String filePath = await FilePicker.getFilePath(
+      //type: FileType.CUSTOM,
+      //fileExtension: 'csv'
+    );
+    if (filePath != null) {
+      Map<String, double> accounts = {};
+      await _table.import(filePath, (List<dynamic> row) {
+        accounts.putIfAbsent(row[2], () => 0.0);
+        accounts[row[2]] += row[1];
+      });
+
+      await (await dbProvider.db).transaction((txn) {
+        txn.execute("DROP TABLE IF EXISTS ${Account.table.tableName};");
+        txn.execute(Account.table.sqlCreateStr());
+        for (var entry in accounts.entries) {
+          Account.table.newRowWith(txn, Account(entry.key, entry.value).toJson());
+        }
+      });
+    }
   }
 }
 
@@ -243,6 +267,7 @@ class Transaction with HasTable {
   }
 
   static Future<int> getNextId() => Transaction._ofNull().nextId();
+  static Future<void> import() => Transaction._ofNull().importData();
 
   bool isExpense() => amount < 0;
   bool isIncome() => amount > 0;

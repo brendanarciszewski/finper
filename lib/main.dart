@@ -4,6 +4,7 @@ import 'views/create_transaction.dart';
 import 'views/accounts_list.dart';
 import 'views/transactions_list.dart';
 import 'views/add_account.dart';
+import 'views/data_import.dart';
 
 void main() => runApp(new App());
 
@@ -99,6 +100,19 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Import Data'),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  new MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return new Scaffold(
+                        appBar: new AppBar(
+                          title: const Text('Import'),
+                        ),
+                        body: new DataImportView(),
+                      );
+                    }
+                  )
+                );
               },
             ),
             new ListTile(

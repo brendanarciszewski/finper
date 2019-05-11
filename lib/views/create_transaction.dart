@@ -11,6 +11,7 @@ class CreateTransactionForm extends StatefulWidget {
 
 class _CreateTransactionFormState extends State<CreateTransactionForm> {
   final _formKey = new GlobalKey<FormState>();
+  final _dF = new DateFormat("yyyy-MM-dd");
   var _timeCon = new TextEditingController(text: "");
   var _dateCon = new TextEditingController(text: "");
 
@@ -126,7 +127,10 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         visible: this._sign != 0.0,
         child: new TextFormField(
           validator: (String value) {
-            if (value.isEmpty && this._sign != 0.0) return 'Enter vendor!';
+            if (this._sign != 0.0) {
+              if (value.isEmpty) return 'Enter vendor!';
+              if (disallowedStrs.contains(value)) return 'Invalid String!';
+            }
           },
           onSaved: (String value) {
             this._vendor = value;
@@ -260,9 +264,9 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                             new DateTime(date.year, date.month, date.day));
                       } catch (_) {}
                     });
-                    final dF = new DateFormat("yyyy-MM-dd");
+
                     try {
-                      this._dateCon.text = dF.format(field.value);
+                      this._dateCon.text = _dF.format(field.value);
                     } catch (_) {
                       this._dateCon.text = "";
                     }
@@ -271,6 +275,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
               },
               validator: (DateTime dt) {
                 if (dt == null) return 'Pick Date!';
+                if (this._dateCon.text != _dF.format(dt)) return 'Reselect!';
               },
               onSaved: (DateTime dt) {
                 this._date = dt;
@@ -295,10 +300,8 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                       initialTime: TimeOfDay.now(),
                     );
                     field.didChange(time);
-                    final p = new NumberFormat("00");
                     try {
-                      this._timeCon.text = '${p.format(field.value.hour)}:'
-                          '${p.format(field.value.minute)}';
+                      this._timeCon.text = _timeFormat(field.value);
                     } catch (_) {
                       this._timeCon.text = "";
                     }
@@ -307,6 +310,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
               },
               validator: (TimeOfDay t) {
                 if (t == null) return 'Pick Time!';
+                if (_timeFormat(t) != this._timeCon.text) return 'Reselect!';
               },
               onSaved: (TimeOfDay t) {
                 this._time = t;
@@ -382,6 +386,11 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         ),
       ),
     ];
+  }
+
+  String _timeFormat(TimeOfDay t) {
+    final p = new NumberFormat("00");
+    return '${p.format(t.hour)}:${p.format(t.minute)}';
   }
 
   void _resetForm() {

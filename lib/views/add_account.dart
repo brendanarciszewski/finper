@@ -97,6 +97,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
       new TextFormField(
         validator: (String value) {
           if (value.isEmpty) return 'Enter account!';
+          if (disallowedStrs.contains(value)) return 'Invalid String!';
         },
         onSaved: (String value) {
           this._name = value;

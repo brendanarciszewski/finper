@@ -1,6 +1,8 @@
 PODS:
   - esys_flutter_share (0.0.1):
     - Flutter
+  - file_picker (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
@@ -13,6 +15,7 @@ PODS:
 
 DEPENDENCIES:
   - esys_flutter_share (from `.symlinks/plugins/esys_flutter_share/ios`)
+  - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
@@ -24,6 +27,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   esys_flutter_share:
     :path: ".symlinks/plugins/esys_flutter_share/ios"
+  file_picker:
+    :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
   path_provider:
@@ -33,6 +38,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   esys_flutter_share: 403498dab005b36ce1f8d7aff377e81f0621b0b4
+  file_picker: 408623be2125b79a4539cf703be3d4b3abe5e245
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
