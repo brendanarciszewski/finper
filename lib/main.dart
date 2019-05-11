@@ -1,3 +1,4 @@
+import 'package:finper/data/data.dart';
 import 'package:flutter/material.dart';
 import 'views/create_transaction.dart';
 import 'views/accounts_list.dart';
@@ -37,26 +38,6 @@ class _HomePageState extends State<HomePage> {
     return new Scaffold(
       appBar: new AppBar(
         title: const Text('Fin(ancial) Per(sistence)'),
-        actions: <Widget>[
-          new IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              Navigator.push(
-                context,
-                new MaterialPageRoute(
-                  builder: (BuildContext context) {
-                    return new Scaffold(
-                      appBar: new AppBar(
-                        title: const Text('Create an Account'),
-                      ),
-                      body: new AddAccountForm(),
-                    );
-                  }
-                )
-              );
-            },
-          ),
-        ],
       ),
       body: _children[_currentIndex],
       bottomNavigationBar: new BottomNavigationBar(
@@ -76,6 +57,45 @@ class _HomePageState extends State<HomePage> {
             title: const Text('Accounts'),
           ),
         ],
+      ),
+      drawer: new Drawer(
+        child: new ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              child: const Text('Extra Options'),
+              decoration: const BoxDecoration(
+                color: Colors.orangeAccent,
+              ),
+            ),
+            new ListTile(
+              title: const Text('Add Account'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  new MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return new Scaffold(
+                        appBar: new AppBar(
+                          title: const Text('Create an Account'),
+                        ),
+                        body: new AddAccountForm(),
+                      );
+                    }
+                  )
+                );
+              },
+            ),
+            new ListTile(
+              title: const Text('Export Data'),
+              onTap: () {
+                Navigator.pop(context);
+                shareDatabase();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
