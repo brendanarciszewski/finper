@@ -56,43 +56,48 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
             const Spacer(),
             const Text('Expense'),
             const Spacer(),
-            new FormField<SliderTheme>(
-              builder: (FormFieldState<SliderTheme> field) {
+            new FormField<double>(
+              initialValue: 0.0,
+              builder: (FormFieldState<double> field) {
                 return new SliderTheme(
-                    data: new SliderThemeData(
-                      trackHeight: 5,
-                      activeTrackColor: Colors.green[700],
-                      inactiveTrackColor: Colors.red[600],
-                      disabledActiveTrackColor: Colors.grey,
-                      disabledInactiveTrackColor: Colors.grey,
-                      activeTickMarkColor: Colors.green[700],
-                      inactiveTickMarkColor: Colors.red[600],
-                      disabledActiveTickMarkColor: Colors.grey,
-                      disabledInactiveTickMarkColor: Colors.grey,
-                      thumbColor: Colors.black,
-                      disabledThumbColor: Colors.grey,
-                      overlayColor: Colors.grey,
-                      valueIndicatorColor: Colors.grey,
-                      trackShape: RectangularSliderTrackShape(),
-                      tickMarkShape: RoundSliderTickMarkShape(),
-                      thumbShape: RoundSliderThumbShape(),
-                      overlayShape: RoundSliderOverlayShape(),
-                      valueIndicatorShape: PaddleSliderValueIndicatorShape(),
-                      showValueIndicator: ShowValueIndicator.never,
-                      valueIndicatorTextStyle: TextStyle(),
-                    ),
-                    child: new Slider(
-                      onChanged: (double value) {
-                        setState(() {
-                          this._sign = value;
-                        });
-                      },
-                      min: -1.0,
-                      max: 1.0,
-                      divisions: 2,
-                      value: this._sign,
-                    )
+                  data: new SliderThemeData(
+                    trackHeight: 5,
+                    activeTrackColor: Colors.green[700],
+                    inactiveTrackColor: Colors.red[600],
+                    disabledActiveTrackColor: Colors.grey,
+                    disabledInactiveTrackColor: Colors.grey,
+                    activeTickMarkColor: Colors.green[700],
+                    inactiveTickMarkColor: Colors.red[600],
+                    disabledActiveTickMarkColor: Colors.grey,
+                    disabledInactiveTickMarkColor: Colors.grey,
+                    thumbColor: Colors.black,
+                    disabledThumbColor: Colors.grey,
+                    overlayColor: Colors.grey,
+                    valueIndicatorColor: Colors.grey,
+                    trackShape: const RectangularSliderTrackShape(),
+                    tickMarkShape: const RoundSliderTickMarkShape(),
+                    thumbShape: const RoundSliderThumbShape(),
+                    overlayShape: const RoundSliderOverlayShape(),
+                    valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
+                    showValueIndicator: ShowValueIndicator.never,
+                    valueIndicatorTextStyle: const TextStyle(),
+                  ),
+                  child: new Slider(
+                    onChanged: (double value) {
+                      setState(() {
+                        this._sign = value;
+                        field.didChange(value);
+                      });
+                    },
+                    min: -1.0,
+                    max: 1.0,
+                    divisions: 2,
+                    value: field.value,
+                  )
                 );
+              },
+              onSaved: (double d) {
+                this._sign = d;
               },
             ),
             const Spacer(),
@@ -232,13 +237,14 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
         children: <Widget>[
           new Flexible(
             flex: 55,
-            child: new FormField<TextField>(
-              //key: ,
-              builder: (FormFieldState<TextField> field) {
+            child: new FormField<DateTime>(
+              initialValue: null,
+              builder: (FormFieldState<DateTime> field) {
                 return new TextField(
                   controller: this._dateCon,
-                  decoration: const InputDecoration(
+                  decoration: new InputDecoration(
                     hintText: 'Choose Date',
+                    errorText: field.errorText,
                     icon: Icon(Icons.date_range),
                   ),
                   onTap: () async {
@@ -250,60 +256,61 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                     );
                     setState(() {
                       try {
-                        this._date = DateTime(date.year, date.month, date.day);
-                      } catch (_) {
-                        this._date = null;
-                      }
+                        field.didChange(
+                            new DateTime(date.year, date.month, date.day));
+                      } catch (_) {}
                     });
                     final dF = new DateFormat("yyyy-MM-dd");
                     try {
-                      this._dateCon.text = dF.format(_date);
+                      this._dateCon.text = dF.format(field.value);
                     } catch (_) {
                       this._dateCon.text = "";
                     }
                   },
                 );
               },
-              validator: (_) {
-                if (this._date == null) return 'Pick Date!';
-                return null;
-              }, // TODO make this output the subscript
+              validator: (DateTime dt) {
+                if (dt == null) return 'Pick Date!';
+              },
+              onSaved: (DateTime dt) {
+                this._date = dt;
+              },
             ),
           ),
           new Flexible(
             flex: 45,
-            child: new FormField<TextField>(
-              //key: ,
-              builder: (FormFieldState<TextField> field) {
+            child: new FormField<TimeOfDay>(
+              initialValue: null,
+              builder: (FormFieldState<TimeOfDay> field) {
                 return new TextField(
                   controller: this._timeCon,
                   decoration: new InputDecoration(
                     hintText: 'Choose Time',
+                    errorText: field.errorText,
                     icon: Icon(Icons.access_time),
                   ),
                   onTap: () async {
-                    var time = await showTimePicker(
+                    final time = await showTimePicker(
                       context: context,
                       initialTime: TimeOfDay.now(),
                     );
-                    setState(() {
-                      this._time = time;
-                    });
+                    field.didChange(time);
                     final p = new NumberFormat("00");
                     try {
-                      this._timeCon.text = '${p.format(this._time.hour)}:'
-                          '${p.format(this._time.minute)}';
+                      this._timeCon.text = '${p.format(field.value.hour)}:'
+                          '${p.format(field.value.minute)}';
                     } catch (_) {
                       this._timeCon.text = "";
-                      this._time = null;
                     }
                   },
                 );
               },
-              validator: (_) {
-                if (this._time == null) return 'Pick Time!';
-                return null;
-              }, // TODO make this output the subscript
+              validator: (TimeOfDay t) {
+                if (t == null) return 'Pick Time!';
+              },
+              onSaved: (TimeOfDay t) {
+                this._time = t;
+              },
             ),
           ),
         ],
@@ -362,13 +369,6 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
                 .of(context)
                 .showSnackBar(
                  const SnackBar(content: const Text('Saved Data')));
-          } else {
-            if (_date == null) {
-              _dateCon.text += '!';
-            }
-            if (_time == null) {
-              _timeCon.text += '!';
-            }
           }
         },
         child: new Text(
