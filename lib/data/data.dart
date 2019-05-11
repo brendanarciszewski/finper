@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'db.dart';
 
 mixin Named {
@@ -19,7 +20,7 @@ mixin HasTable {
     return (curIdResp[0][colName] ?? 0) + 1;
   }
 
-  Future<Null> addToDb() async {
+  Future<void> addToDb() async {
     var newId = _table.newRowWith(await dbProvider.db, this.toJson());
     this._id = await newId;
   }
@@ -35,6 +36,21 @@ mixin HasTable {
     return db.update(_table.tableName, this.toJson(),
         where: "${Param.id().name} = ?", whereArgs: [this.id]);
   }
+
+  Future<void> shareData() async {
+    String csv = await _table.export();
+    await Share.file(_table.tableName, '${_table.tableName}.csv', utf8.encode(csv), 'text/csv');
+  }
+}
+
+Future<void> shareDatabase() async {
+  Map<String, List<int>> files = {};
+
+  await Future.wait(dbProvider.tables.map((Table t) async {
+    files['${t.tableName}.csv'] = utf8.encode(await t.export());
+  }));
+
+  Share.files('Database', files, 'text/csv');
 }
 
 class Category with HasTable, Named {
