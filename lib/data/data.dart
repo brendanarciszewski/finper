@@ -20,7 +20,7 @@ import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:file_picker/file_picker.dart';
 import 'db.dart';
 
-final disallowedStrs = ["null"];
+const DISALLOWED_STRS = ["null"];
 
 mixin Named {
   String get name;
@@ -97,11 +97,10 @@ Future<void> shareDatabase() async {
 class Category with HasTable, Named {
   int _id;
   int get id => _id;
-  final String name;
-
+  String name;
   List<Category> subcategories;
-  static final table = categoriesV1;
 
+  static final table = categoriesV1;
   Table get _table => table;
 
   Category(String name, List<String> subcategories) :
@@ -207,8 +206,8 @@ class Account with HasTable, Named {
   int get id => _id;
   String name;
   double amount;
-  static final table = accountsV1;
 
+  static final table = accountsV1;
   Table get _table => table;
 
   Account._(this._id, this.name, this.amount);
@@ -251,8 +250,8 @@ class Transaction with HasTable {
   String subcategory;
   /*List<int>*/ Object receipt;
   int transferId;
-  static final table = transactionsV1;
 
+  static final table = transactionsV1;
   Table get _table => table;
 
   Transaction._(this._id, this.amount, this.account, this.vendor, this.dt,

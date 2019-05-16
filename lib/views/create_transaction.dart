@@ -146,7 +146,7 @@ class _CreateTransactionFormState extends State<CreateTransactionForm> {
           validator: (String value) {
             if (this._sign != 0.0) {
               if (value.isEmpty) return 'Enter vendor!';
-              if (disallowedStrs.contains(value)) return 'Invalid String!';
+              if (DISALLOWED_STRS.contains(value)) return 'Invalid String!';
             }
           },
           onSaved: (String value) {
