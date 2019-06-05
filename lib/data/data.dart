@@ -94,6 +94,10 @@ Future<void> shareDatabase() async {
   Share.files('Database', files, 'text/csv');
 }
 
+Future<void> disposeDatabase() async {
+  await (await dbProvider.db).close();
+}
+
 class Category with HasTable, Named {
   int _id;
   int get id => _id;

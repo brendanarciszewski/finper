@@ -161,6 +161,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  @override
+  void dispose() {
+    disposeDatabase().then((void _) {
+      super.dispose();
+    });
+  }
+
   void onTabTapped(int index) {
     setState(() {
       _currentIndex = index;
